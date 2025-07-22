@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Header from './header';
 import Footer from './footer';
-import DiscountBanner from './DiscountBanner';
 
 const Layout = ({ 
   children, 
@@ -42,7 +41,6 @@ const Layout = ({
 
       <main className="flex-grow flex flex-col">
         <div className="w-full flex-grow">
-          {/* <DiscountBanner /> */}
           {children}
         </div>
       </main>
