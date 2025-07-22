@@ -27,7 +27,7 @@ const App = () => {
     return !!(accessToken && refreshToken);
   });
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const GOFTINO_KEY = "cD7Gse";
+  const GOFTINO_KEY = "qn3s7J";
 
 
   // Check login status
