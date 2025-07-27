@@ -19,6 +19,8 @@ import MoshaverAvailabilityPage from './pages/moshaverReservation';
 import TherapistHomePage from './pages/HomePage';
 import TermsAndConditionsPage from './pages/TermsAndConditions';
 import ContactUsPage from './pages/ContacUs';
+import MoshaverProfile from './pages/UserProfile';
+import PersianHadithSpiritualPage from './pages/hh';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -92,6 +94,7 @@ const App = () => {
             {/* Login Routes */}
             <Route path="*" element={<NotFound />} />
             <Route path="/" element={<TherapistHomePage />} />
+            <Route path="/Profile" element={<MoshaverProfile setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
             <Route path="/signup" element={<RegistrationPage />} />
             <Route path="/ConsultantProfile" element={<ConsultantProfile />} />

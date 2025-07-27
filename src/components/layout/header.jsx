@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { Heart, Menu, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <nav className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50" dir="rtl">
@@ -13,7 +15,14 @@ export default function Header() {
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4">
               <div className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
-                مشاوریتو
+          <Link
+            to="/"
+            className={`text-xl font-b6 relative overflow-hidden
+            `}
+          >
+                            مشاوریتو
+
+          </Link>                
               </div>
               <div className="hidden md:flex text-sm bg-gradient-to-r from-green-500 to-teal-500 text-white px-3 py-1 rounded-full">
                 ویژه مشاوران
@@ -28,10 +37,15 @@ export default function Header() {
             </nav>
 
             <div className="flex items-center gap-3">
-              <button className="text-gray-700 hover:text-teal-600 transition-colors">
+              <button 
+              onClick={() => navigate('/login')}
+              className="text-gray-700 hover:text-teal-600 transition-colors">
                 ورود
               </button>
-              <button className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-full hover:from-teal-600 hover:to-blue-600 transition-all">
+              <button 
+              onClick={() => navigate('/wait')}
+              
+              className="bg-gradient-to-r from-teal-500 to-blue-500 text-white px-6 py-2 rounded-full hover:from-teal-600 hover:to-blue-600 transition-all">
                 شروع همکاری
               </button>
               <button 

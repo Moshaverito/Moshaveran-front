@@ -173,12 +173,6 @@ const faqData = [
               className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-all shadow-lg hover:shadow-xl">
                 همین حالا شروع کنید
               </button>
-              <button
-              onClick={() => navigate('#faq')}
-              className="border-2 border-teal-500 text-teal-600 hover:bg-teal-50 px-8 py-4 rounded-full text-lg font-semibold transition-all">
-               
-                اطلاعات بیشتر
-              </button>
             </div>
           </div>
 
@@ -400,10 +394,17 @@ const faqData = [
               به جمع هزاران مشاور حرفه‌ای بپیوندید و کمک به دیگران را شروع کنید
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="bg-white text-teal-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-all shadow-lg">
+              <button 
+              onClick={() => navigate('/wait')}
+
+              className="bg-white text-teal-600 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-all shadow-lg">
                 ثبت‌نام رایگان
               </button>
-              <button className="border-2 border-white text-white hover:bg-white hover:text-teal-600 px-8 py-4 rounded-full text-lg font-semibold transition-all">
+              <button
+              onClick={() => navigate('/contact')}
+
+               className="border-2 border-white text-black hover:bg-white hover:text-teal-600 px-8 py-4 rounded-full text-lg font-semibold transition-all">
+              
                 تماس با ما
               </button>
             </div>

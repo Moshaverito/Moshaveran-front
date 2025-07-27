@@ -1,553 +1,943 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Flame, Mail, Calendar, Edit3, Upload, Bell,
-  Trophy, Target, CircleSlash, Gift, CreditCard, Clock, BookOpen, Award, Zap
-} from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import Notiflix from 'notiflix';
-import * as Yup from 'yup';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
-import { Button } from "../components/ui/button";
+import React, { useState, useRef, useEffect } from 'react';
+import { ArrowLeft, Camera, Video, Plus, X, FileText, Calendar, BookOpen, Upload, CheckCircle, AlertCircle, User, Save, Trash2, Edit3, Eye, EyeOff, Mic, CreditCard, Clock } from 'lucide-react';
 
-const StatsCard = ({ icon: Icon, label, value, gradient }) => (
-  <Card className="overflow-hidden border-0 bg-gray-50 dark:bg-gray-800">
-    <CardContent className="p-6">
-      <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-lg ${gradient}`}>
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
-
-const UserProfilePage = () => {
-  const { t } = useTranslation();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [bio, setBio] = useState('');
-  const [notifications, setNotifications] = useState([]);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [birthDate, setBirthDate] = useState({
-    day: '',
-    month: '',
-    year: ''
+const MoshaverProfile = () => {
+  const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
+  const [profile, setProfile] = useState({
+    bio: '',
+    birthdate: '', // Will be in Georgian format for API
+    birthdateDisplay: '', // Jalali display format
+    imageUrl: '',
+    videoUrl: '',
+    audioUrl: '',
+    creditCardNumber: '',
+    degrees: []
   });
-
-  Notiflix.Notify.init({
-    width: '280px',
-    position: 'right-top',
-    distance: '10px',
-    opacity: 0.9,
-    fontSize: '20px',
-    borderRadius: '5px',
+  
+  const [loading, setLoading] = useState({
+    image: false,
+    video: false,
+    audio: false,
+    profile: false,
+    userInfo: true
   });
-
-  const validationSchema = Yup.object().shape({
-    first_name: Yup.string()
-      .matches(/^[a-zA-Z\u0600-\u06FF\s]+$/, t("invalidName"))
-      .max(20, t("nameTooLong"))
-      .required(t("required")),
-    phone_number: Yup.string()
-      .matches(/^\d+$/, t("invalidPhoneNumber"))
-      .min(11, t("phoneNumberTooShort"))
-      .max(13, t("phoneNumberTooLong"))
-      .required(t("required")),
-    email: Yup.string()
-      .email(t("invalidEmail"))
-      .required(t("required")),
-    birthDay: Yup.number()
-      .min(1, t("invalidDay"))
-      .max(31, t("invalidDay"))
-      .required(t("required")),
-    birthMonth: Yup.number()
-      .min(1, t("invalidMonth"))
-      .max(12, t("invalidMonth"))
-      .required(t("required")),
-    birthYear: Yup.number()
-      .min(1300, t("invalidYear"))
-      .max(2020, t("invalidYear"))
-      .required(t("required")),
-    national_code: Yup.string()
-      .matches(/^[0-9]{10}$/, t("invalidNationalCode"))
-      .required(t("required")),
+  
+  const [errors, setErrors] = useState({});
+  const [showVideo, setShowVideo] = useState(false);
+  const [showAudio, setShowAudio] = useState(false);
+  const [newDegree, setNewDegree] = useState({
+    title: '',
+    institution: '',
+    year: '',
+    field: ''
   });
+  const [showAddDegree, setShowAddDegree] = useState(false);
+  
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const audioInputRef = useRef(null);
 
+  // Fetch user info on component mount
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = localStorage.getItem("accessToken");
-        const headers = { 'Authorization': `Bearer ${token}` };
+    fetchUserInfo();
+  }, []);
 
-        const [userResponse, notificationsResponse] = await Promise.all([
-          fetch('http://localhost:8000/account/user-info/', { headers }),
-          fetch('http://localhost:8000/account/NotifyUser/', { headers })
-        ]);
-
-        if (!userResponse.ok || !notificationsResponse.ok) {
-          throw new Error(t('fetchError'));
+  const fetchUserInfo = async () => {
+    try {
+      setLoading(prev => ({ ...prev, userInfo: true }));
+      
+      const response = await fetch('http://localhost:8000/api/userinfo', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          // Add auth headers if needed
         }
+      });
 
-        const userData = await userResponse.json();
-        const notificationsData = await notificationsResponse.json();
-
-        // Parse birthdate into separate fields
-        if (userData.birthdate) {
-          const [year, month, day] = userData.birthdate.split('-');
-          setBirthDate({
-            day: parseInt(day),
-            month: parseInt(month),
-            year: parseInt(year)
-          });
-        }
-
-        setUser(userData);
-        setBio(userData.bio || '');
-        setNotifications(notificationsData);
-        setLoading(false);
-      } catch (err) {
-        setError(err.message);
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('خطا در دریافت اطلاعات کاربر');
       }
-    };
 
-    fetchUserData();
-  }, [t]);
+      const data = await response.json();
+      setUserLevel(data.level || 1);
+      
+      // If user data exists, populate the form
+      if (data.profile) {
+        setProfile(prev => ({
+          ...prev,
+          bio: data.profile.bio || '',
+          birthdate: data.profile.birthdate || '',
+          birthdateDisplay: data.profile.birthdate ? georgianToJalali(data.profile.birthdate) : '',
+          imageUrl: data.profile.image_url || '',
+          videoUrl: data.profile.video_url || '',
+          audioUrl: data.profile.audio_url || '',
+          creditCardNumber: data.profile.credit_card_number || '',
+          degrees: data.profile.degrees || []
+        }));
+      }
+    } catch (error) {
+      setErrors(prev => ({ ...prev, userInfo: error.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, userInfo: false }));
+    }
+  };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+  // Jalali to Georgian date conversion
+  const jalaliToGeorgian = (jalaliDate) => {
+    if (!jalaliDate) return '';
+    const [year, month, day] = jalaliDate.split('/').map(Number);
+    const georgianYear = year + 621;
+    return `${georgianYear}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  };
+
+  // Georgian to Jalali date conversion
+  const georgianToJalali = (georgianDate) => {
+    if (!georgianDate) return '';
+    const date = new Date(georgianDate);
+    const georgianYear = date.getFullYear();
+    const jalaliYear = georgianYear - 621;
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${jalaliYear}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+  };
+
+  // Validate media file duration (under 1 minute)
+  const validateMediaDuration = (file, type) => {
+    return new Promise((resolve, reject) => {
+      const element = document.createElement(type);
+      element.preload = 'metadata';
+      
+      element.onloadedmetadata = () => {
+        if (element.duration > 60) {
+          reject(new Error(`مدت زمان ${type === 'video' ? 'ویدیو' : 'صوت'} نباید بیش از یک دقیقه باشد`));
+        } else {
+          resolve();
+        }
+      };
+      
+      element.onerror = () => {
+        reject(new Error('خطا در بارگذاری فایل'));
+      };
+      
+      element.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
     if (!file) return;
 
-    const maxSizeInBytes = 5 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
-      Notiflix.Notify.failure(t('fileTooLarge'));
+    if (!file.type.startsWith('image/')) {
+      setErrors(prev => ({ ...prev, image: 'لطفاً یک فایل تصویری انتخاب کنید' }));
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, image: 'حجم فایل نباید بیش از 5 مگابایت باشد' }));
       return;
     }
 
     try {
-      Notiflix.Notify.info(t('uploadInProgress'));
+      setLoading(prev => ({ ...prev, image: true }));
+      setErrors(prev => ({ ...prev, image: '' }));
 
-      const token = localStorage.getItem("accessToken");
       const formData = new FormData();
-      formData.append("image", file);
+      formData.append('image', file);
 
-      const filePreview = URL.createObjectURL(file);
-      setUser((prev) => ({ ...prev, profile_picture: filePreview }));
-
-      const uploadResponse = await fetch('http://localhost:8000/account/MyImage/', {
+      const response = await fetch('http://localhost:8000/api/image_upload', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
+        body: formData
       });
-
-      if (!uploadResponse.ok) {
-        throw new Error(t('uploadProfilePicError'));
-      }
-
-      const uploadData = await uploadResponse.json();
-
-      const updateProfileResponse = await fetch('http://localhost:8000/account/profile/update_profile/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...user,
-          pic_url: uploadData.image,
-        }),
-      });
-
-      if (!updateProfileResponse.ok) {
-        throw new Error(t('updateProfileError'));
-      }
-
-      const updatedUserData = await updateProfileResponse.json();
-      setUser((prev) => ({
-        ...prev,
-        profile_picture: updatedUserData.profile_picture || uploadData.image,
-      }));
-
-      Notiflix.Notify.success(t('profilePictureUpdated'));
-    } catch (err) {
-      setError(err.message);
-      Notiflix.Notify.failure(err.message);
-    }
-  };
-
-  const handleInputChange = async (e) => {
-    const { name, value } = e.target;
-    setUser((prev) => ({ ...prev, [name]: value }));
-
-    try {
-      await validationSchema.validateAt(name, { [name]: value });
-      setValidationErrors((prev) => ({ ...prev, [name]: null }));
-    } catch (err) {
-      setValidationErrors((prev) => ({ ...prev, [name]: err.message }));
-    }
-  };
-
-  const handleBirthDateChange = (field) => (e) => {
-    const value = e.target.value;
-    setBirthDate(prev => ({
-      ...prev,
-      [field]: value
-    }));
-
-    // Update the main user object with the combined date
-    const updatedBirthDate = {
-      ...birthDate,
-      [field]: value
-    };
-    
-    const formattedDate = `${updatedBirthDate.year}-${
-      String(updatedBirthDate.month).padStart(2, '0')
-    }-${String(updatedBirthDate.day).padStart(2, '0')}`;
-    
-    setUser(prev => ({
-      ...prev,
-      birthdate: formattedDate
-    }));
-
-    // Validate the individual field
-    try {
-      validationSchema.validateAt(`birth${field.charAt(0).toUpperCase() + field.slice(1)}`, { [`birth${field.charAt(0).toUpperCase() + field.slice(1)}`]: value });
-      setValidationErrors(prev => ({ ...prev, [field]: null }));
-    } catch (err) {
-      setValidationErrors(prev => ({ ...prev, [field]: err.message }));
-    }
-  };
-
-  const handleBioChange = (e) => setBio(e.target.value);
-
-  const handleSave = async () => {
-    try {
-      // Validate birth date fields separately
-      await validationSchema.validate({
-        ...user,
-        birthDay: birthDate.day,
-        birthMonth: birthDate.month,
-        birthYear: birthDate.year
-      }, { abortEarly: false });
-
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch('http://localhost:8000/account/profile/update_profile/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...user,
-          bio,
-          pic_url: user.profile_picture,
-        }),
-      });
-
-      const updatedUserData = await response.json();
 
       if (!response.ok) {
-        throw new Error(t('updateProfileError'));
+        throw new Error('خطا در آپلود تصویر');
       }
 
-      setUser({ ...user, ...updatedUserData });
-      setEditMode(false);
-      Notiflix.Notify.success(t('profileUpdated'));
-    } catch (err) {
-      if (err.name === "ValidationError") {
-        err.inner.forEach((error) => {
-          Notiflix.Notify.failure(error.message);
-        });
-      } else {
-        setError(err.message);
-        Notiflix.Notify.failure(err.message);
-      }
+      const data = await response.json();
+      setProfile(prev => ({ ...prev, imageUrl: data.url }));
+    } catch (error) {
+      setErrors(prev => ({ ...prev, image: error.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, image: false }));
     }
   };
 
-  const renderBirthDateInputs = () => (
-    <div className="grid grid-cols-3 gap-2">
-      <div>
-        <input
-          type="number"
-          className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-            validationErrors.day ? 'border-red-500' : 'border-gray-300'
-          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-          placeholder={t('day')}
-          value={birthDate.day}
-          onChange={handleBirthDateChange('day')}
-          min="1"
-          max="31"
-        />
-      </div>
-      <div>
-        <input
-          type="number"
-          className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-            validationErrors.month ? 'border-red-500' : 'border-gray-300'
-          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-          placeholder={t('month')}
-          value={birthDate.month}
-          onChange={handleBirthDateChange('month')}
-          min="1"
-          max="12"
-        />
-      </div>
-      <div>
-        <input
-          type="number"
-          className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-            validationErrors.year ? 'border-red-500' : 'border-gray-300'
-          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-          placeholder={t('year')}
-          value={birthDate.year}
-          onChange={handleBirthDateChange('year')}
-          min="1300"
-          max="2020"
-        />
-      </div>
-    </div>
-  );
+  const handleVideoUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500" />
-    </div>
-  );
+    if (!file.type.startsWith('video/')) {
+      setErrors(prev => ({ ...prev, video: 'لطفاً یک فایل ویدیویی انتخاب کنید' }));
+      return;
+    }
 
-  if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
-  if (!user) return <div className="text-center p-4 text-gray-500">{t('noUserData')}</div>;
+    if (file.size > 50 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, video: 'حجم فایل نباید بیش از 50 مگابایت باشد' }));
+      return;
+    }
+
+    try {
+      await validateMediaDuration(file, 'video');
+      
+      setLoading(prev => ({ ...prev, video: true }));
+      setErrors(prev => ({ ...prev, video: '' }));
+
+      const formData = new FormData();
+      formData.append('video', file);
+
+      const response = await fetch('http://localhost:8000/api/video_upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('خطا در آپلود ویدیو');
+      }
+
+      const data = await response.json();
+      setProfile(prev => ({ ...prev, videoUrl: data.url }));
+    } catch (error) {
+      setErrors(prev => ({ ...prev, video: error.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, video: false }));
+    }
+  };
+
+  const handleAudioUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('audio/')) {
+      setErrors(prev => ({ ...prev, audio: 'لطفاً یک فایل صوتی انتخاب کنید' }));
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, audio: 'حجم فایل نباید بیش از 10 مگابایت باشد' }));
+      return;
+    }
+
+    try {
+      await validateMediaDuration(file, 'audio');
+      
+      setLoading(prev => ({ ...prev, audio: true }));
+      setErrors(prev => ({ ...prev, audio: '' }));
+
+      const formData = new FormData();
+      formData.append('audio', file);
+
+      const response = await fetch('http://localhost:8000/api/audio_upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('خطا در آپلود صوت');
+      }
+
+      const data = await response.json();
+      setProfile(prev => ({ ...prev, audioUrl: data.url }));
+    } catch (error) {
+      setErrors(prev => ({ ...prev, audio: error.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, audio: false }));
+    }
+  };
+
+  const handleBirthdateChange = (jalaliDate) => {
+    const georgianDate = jalaliToGeorgian(jalaliDate);
+    setProfile(prev => ({
+      ...prev,
+      birthdate: georgianDate,
+      birthdateDisplay: jalaliDate
+    }));
+  };
+
+  const addDegree = () => {
+    if (!newDegree.title.trim() || !newDegree.institution.trim()) {
+      setErrors(prev => ({ ...prev, degree: 'لطفاً عنوان مدرک و نام موسسه را وارد کنید' }));
+      return;
+    }
+
+    if (profile.degrees.length >= 30) {
+      setErrors(prev => ({ ...prev, degree: 'حداکثر 30 مدرک قابل اضافه کردن است' }));
+      return;
+    }
+
+    setProfile(prev => ({
+      ...prev,
+      degrees: [...prev.degrees, { ...newDegree, id: Date.now() }]
+    }));
+
+    setNewDegree({ title: '', institution: '', year: '', field: '' });
+    setShowAddDegree(false);
+    setErrors(prev => ({ ...prev, degree: '' }));
+  };
+
+  const removeDegree = (degreeId) => {
+    setProfile(prev => ({
+      ...prev,
+      degrees: prev.degrees.filter(degree => degree.id !== degreeId)
+    }));
+  };
+
+  const validateLevel1 = () => {
+    const errors = {};
+    
+    if (!profile.imageUrl) {
+      errors.image = 'آپلود تصویر پروفایل الزامی است';
+    }
+    
+    if (!profile.videoUrl && !profile.audioUrl) {
+      errors.media = 'آپلود حداقل یکی از فایل‌های ویدیو یا صوت الزامی است';
+    }
+    
+    if (!profile.bio.trim()) {
+      errors.bio = 'وارد کردن بیوگرافی الزامی است';
+    }
+    
+    return errors;
+  };
+
+  const validateLevel2 = () => {
+    const errors = validateLevel1();
+    
+    if (!profile.birthdateDisplay) {
+      errors.birthdate = 'وارد کردن تاریخ تولد الزامی است';
+    }
+    
+    if (!profile.creditCardNumber.trim()) {
+      errors.creditCard = 'وارد کردن شماره کارت الزامی است';
+    } else if (!/^\d{16}$/.test(profile.creditCardNumber.replace(/\s/g, ''))) {
+      errors.creditCard = 'شماره کارت باید 16 رقم باشد';
+    }
+    
+    if (profile.degrees.length === 0) {
+      errors.degrees = 'افزودن حداقل یک مدرک تحصیلی الزامی است';
+    }
+    
+    return errors;
+  };
+
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(prev => ({ ...prev, profile: true }));
+      setErrors({});
+
+      // Validate based on current level
+      const validationErrors = userLevel === 1 ? validateLevel1() : validateLevel2();
+      
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
+        return;
+      }
+
+      const payload = {
+        bio: profile.bio,
+        birthdate: profile.birthdate,
+        image_url: profile.imageUrl,
+        video_url: profile.videoUrl,
+        audio_url: profile.audioUrl,
+        credit_card_number: profile.creditCardNumber.replace(/\s/g, ''),
+        degrees: profile.degrees,
+        level: userLevel === 1 ? 2 : userLevel // Move to next level if completing level 1
+      };
+
+      const response = await fetch('http://localhost:8000/api/update_profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error('خطا در ذخیره پروفایل');
+      }
+
+      // Success feedback
+      alert('پروفایل با موفقیت ذخیره شد');
+      
+      // If completing level 2, redirect to questionnaire
+      if (userLevel === 2) {
+        window.location.href = '/TQuestionnaire';
+      } else if (userLevel === 1) {
+        // Update user level and reload component
+        setUserLevel(2);
+        alert('مرحله اول تکمیل شد. لطفاً مرحله دوم را نیز تکمیل کنید.');
+      }
+    } catch (error) {
+      setErrors(prev => ({ ...prev, profile: error.message }));
+    } finally {
+      setLoading(prev => ({ ...prev, profile: false }));
+    }
+  };
+
+  const formatCardNumber = (value) => {
+    const cleaned = value.replace(/\s/g, '');
+    const formatted = cleaned.replace(/(.{4})/g, '$1 ').trim();
+    return formatted;
+  };
+
+  if (loading.userInfo) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">در حال بارگذاری...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-800">
-        <div className="container mx-auto px-4 py-16 pt-32">
-          <div className="relative max-w-4xl mx-auto">
-            <div className="flex flex-col items-center">
-              <div className="relative">
-                <img
-                  src={user.profile_picture || '/api/placeholder/150/150'}
-                  alt={user.first_name}
-                  className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
-                />
-                {editMode && (
-                  <label
-                    htmlFor="profile-picture"
-                    className="absolute bottom-2 right-2 bg-white dark:bg-gray-800 p-2 rounded-full cursor-pointer shadow-lg hover:bg-opacity-90 transition-colors"
-                  >
-                    <Upload className="w-4 h-4 text-blue-600" />
-                    <input
-                      id="profile-picture"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                    />
-                  </label>
-                )}
-                <div className="absolute -top-2 -right-2 bg-green-500 text-white w-10 h-10 rounded-full flex items-center justify-center shadow-lg">
-                  <Zap className="w-5 h-5" />
-                  <span className="text-xs font-bold ml-1">{user.streak}</span>
-                </div>
-              </div>
-
-              <h1 className="mt-4 text-3xl font-bold text-white">
-                {user.first_name}
-              </h1>
-              <p className="text-white/80 mt-2 max-w-xl text-center">
-                {user.bio || t('noBio')}
-              </p>
-
-              <Button
-                onClick={() => setEditMode(!editMode)}
-                className="mt-4 bg-white/20 hover:bg-white/30 text-white"
-              >
-                <Edit3 className="w-4 h-4 mr-2" />
-                {editMode ? t('cancel') : t('editProfile')}
-              </Button>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800" dir="rtl">
+      {/* Header */}
+      <div className="bg-white/30 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <button className="p-2 hover:bg-white/50 rounded-full transition-all">
+              <ArrowLeft className="w-6 h-6 text-gray-700" />
+            </button>
+            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
+              پروفایل مشاور - مرحله {userLevel}
+            </h1>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 -mt-12 space-y-6 pb-12 max-w-4xl">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <StatsCard
-            icon={Calendar}
-            label={t('subscription')}
-            value={`${user.subscriptionDaysLeft} ${t('daysLeft')}`}
-            gradient="bg-gradient-to-r from-blue-500 to-blue-600"
-          />
-          <StatsCard
-            icon={CreditCard}
-            label={t('credits')}
-            value={user.credit || 0}
-            gradient="bg-gradient-to-r from-purple-500 to-purple-600"
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Progress Indicator */}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-gray-600">پیشرفت تکمیل پروفایل</span>
+            <span className="text-sm font-medium text-teal-600">مرحله {userLevel} از 3</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-teal-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(userLevel / 3) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Profile Photo Section */}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Camera className="w-5 h-5" />
+            تصویر پروفایل
+            <span className="text-red-500 text-sm">*</span>
+          </h2>
+          
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                {profile.imageUrl ? (
+                  <img 
+                    src={profile.imageUrl} 
+                    alt="تصویر پروفایل" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-gray-400" />
+                )}
+              </div>
+              
+              {loading.image && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1">
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                disabled={loading.image}
+                className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {loading.image ? 'در حال آپلود...' : 'انتخاب تصویر'}
+              </button>
+              
+              <p className="text-sm text-gray-600 mt-2">
+                فرمت‌های مجاز: JPG, PNG, GIF - حداکثر 5 مگابایت
+              </p>
+              
+              {errors.image && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.image}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
           />
         </div>
 
-        {/* Profile Details */}
-        <Card className="border-0 bg-white dark:bg-gray-800 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold">
-              {t('personalInfo')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {editMode ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input
-                    className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-                      validationErrors.first_name ? 'border-red-500' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder={t('enterName')}
-                    value={user.first_name}
-                    name="first_name"
-                    onChange={handleInputChange}
-                  />
-                  <input
-                    className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-                      validationErrors.phone_number ? 'border-red-500' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder={t('enterPhoneNumber')}
-                    value={user?.phone_number || ''}
-                    name="phone_number"
-                    onChange={handleInputChange}
-                  />
-                  <input
-                    className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-                      validationErrors.email ? 'border-red-500' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder={t('enterEmail')}
-                    value={user?.email || ''}
-                    name="email"
-                    onChange={handleInputChange}
-                  />
-                  {/* Replace single birthdate input with separated inputs */}
-                  <div className="col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('birthdate')}
-                    </label>
-                    {renderBirthDateInputs()}
+        {/* Media Section */}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Video className="w-5 h-5" />
+            ویدیو یا صوت معرفی
+            <span className="text-red-500 text-sm">*</span>
+          </h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Video Section */}
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                ویدیو معرفی
+              </h3>
+              
+              {profile.videoUrl && (
+                <div className="mb-4">
+                  <div className="relative bg-black rounded-xl overflow-hidden">
+                    {showVideo ? (
+                      <video 
+                        src={profile.videoUrl} 
+                        controls 
+                        className="w-full max-h-48 object-contain"
+                      />
+                    ) : (
+                      <div className="h-32 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                        <button
+                          onClick={() => setShowVideo(true)}
+                          className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-all"
+                        >
+                          <Eye className="w-6 h-6 text-white" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <input
-                    className={`w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border ${
-                      validationErrors.national_code ? 'border-red-500' : 'border-gray-300'
-                    } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-                    placeholder={t('enterNationalCode')}
-                    value={user?.national_code || ''}
-                    name="national_code"
-                    onChange={handleInputChange}
-                  />
-                  <textarea
-                    className="w-full bg-gray-50 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder={t('enterBio')}
-                    value={bio}
-                    onChange={handleBioChange}
-                    rows={3}
-                  />
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => setShowVideo(!showVideo)}
+                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                    >
+                      {showVideo ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showVideo ? 'مخفی کردن' : 'مشاهده'}
+                    </button>
+                    <button
+                      onClick={() => setProfile(prev => ({ ...prev, videoUrl: '' }))}
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      حذف
+                    </button>
+                  </div>
                 </div>
-                <Button
-                  onClick={handleSave}
-                  className="w-full md:w-auto bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                >
-                  {t('saveChanges')}
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('name')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.first_name}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('phoneNumber')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.phone_number}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('email')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.email}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('birthdate')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.birthdate}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('NationalCode')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.national_code}</p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('bio')}</p>
-                  <p className="text-gray-900 dark:text-white font-medium">{user.bio || t('noBio')}</p>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-
-{/* Notifications */}
-<Card className="border-0 bg-white dark:bg-gray-800 shadow-md">
-  <CardHeader>
-    <div className="flex items-center gap-2">
-      <Bell className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-      <CardTitle className="text-xl font-bold">
-        {t('myNotifications')}
-      </CardTitle>
-    </div>
-  </CardHeader>
-  <CardContent>
-    {notifications.length > 0 ? (
-      <div className="space-y-4">
-        {notifications
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) // Sort by date (newest first)
-          .map((notification, index) => (
-            <div
-              key={notification.id}
-              className={`p-4 rounded-lg bg-gray-50 dark:bg-gray-700 ${
-                index === 0 && !notification.message_seen ? 'border-l-4 border-blue-500' : ''
-              }`}
-            >
-              <p className="text-gray-600 dark:text-gray-300">
-                {notification.text}
+              )}
+              
+              <button
+                onClick={() => videoInputRef.current?.click()}
+                disabled={loading.video}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {loading.video ? 'در حال آپلود...' : 'انتخاب ویدیو'}
+              </button>
+              
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                حداکثر 1 دقیقه - MP4, MOV, AVI - حداکثر 50MB
               </p>
-              <div className="mt-2 flex items-center gap-2">
-                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {new Date(notification.created_at).toLocaleDateString()}
+              
+              {errors.video && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.video}
                 </div>
-                {index === 0 && !notification.message_seen && ( // Only show "new" label for the first notification
-                  <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full">
-                    {t('new')}
-                  </span>
+              )}
+              
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
+            </div>
+
+            {/* Audio Section */}
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Mic className="w-4 h-4" />
+                صوت معرفی
+              </h3>
+              
+              {profile.audioUrl && (
+                <div className="mb-4">
+                  <div className="bg-gray-100 rounded-xl p-4">
+                    {showAudio ? (
+                      <audio 
+                        src={profile.audioUrl} 
+                        controls 
+                        className="w-full"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-16">
+                        <button
+                          onClick={() => setShowAudio(true)}
+                          className="bg-teal-500 hover:bg-teal-600 text-white rounded-full p-3 transition-all"
+                        >
+                          <Mic className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => setShowAudio(!showAudio)}
+                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                    >
+                      {showAudio ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showAudio ? 'مخفی کردن' : 'پخش'}
+                    </button>
+                    <button
+                      onClick={() => setProfile(prev => ({ ...prev, audioUrl: '' }))}
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      حذف
+                    </button>
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={() => audioInputRef.current?.click()}
+                disabled={loading.audio}
+                className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {loading.audio ? 'در حال آپلود...' : 'انتخاب صوت'}
+              </button>
+              
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                حداکثر 1 دقیقه - MP3, WAV, M4A - حداکثر 10MB
+              </p>
+              
+              {errors.audio && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.audio}
+                </div>
+              )}
+              
+              <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                onChange={handleAudioUpload}
+                className="hidden"
+              />
+            </div>
+          </div>
+          
+          {errors.media && (
+            <div className="mt-4 text-sm text-red-600 flex items-center gap-1 justify-center">
+              <AlertCircle className="w-4 h-4" />
+              {errors.media}
+            </div>
+          )}
+        </div>
+
+        {/* Basic Info Section */}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Edit3 className="w-5 h-5" />
+            اطلاعات پایه
+          </h2>
+          
+          <div className="space-y-4">
+            {/* Bio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                بیوگرافی
+                <span className="text-red-500 text-sm">*</span>
+              </label>
+              <textarea
+                placeholder="درباره خود، تخصص‌ها و تجربیاتتان بنویسید..."
+                value={profile.bio}
+                onChange={(e) => setProfile(prev => ({ ...prev, bio: e.target.value }))}
+                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                rows={4}
+                maxLength={500}
+              />
+              <div className="flex justify-between items-center mt-1">
+                <div className="text-sm text-gray-500">
+                  {profile.bio.length}/500 کاراکتر
+                </div>
+                {errors.bio && (
+                  <div className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.bio}
+                  </div>
                 )}
               </div>
             </div>
-          ))}
-      </div>
-    ) : (
-      <div className="text-center py-8">
-        <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-500 dark:text-gray-400">{t('no New Notifications')}</p>
-      </div>
-    )}
-  </CardContent>
-</Card>
+
+            {/* Level 2 Fields */}
+            {userLevel >= 2 && (
+              <>
+                {/* Birthdate */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    تاریخ تولد (شمسی)
+                    <span className="text-red-500 text-sm">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="1370/01/01"
+                      value={profile.birthdateDisplay}
+                      onChange={(e) => handleBirthdateChange(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-left"
+                      dir="ltr"
+                    />
+                    <Calendar className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  </div>
+                  {errors.birthdate && (
+                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.birthdate}
+                    </div>
+                  )}
+                </div>
+
+                {/* Credit Card Number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    شماره کارت
+                    <span className="text-red-500 text-sm">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="1234 5678 9012 3456"
+                      value={formatCardNumber(profile.creditCardNumber)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\s/g, '');
+                        if (value.length <= 16 && /^\d*$/.test(value)) {
+                          setProfile(prev => ({ ...prev, creditCardNumber: value }));
+                        }
+                      }}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-left"
+                      dir="ltr"
+                      maxLength={19}
+                    />
+                    <CreditCard className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  </div>
+                  {errors.creditCard && (
+                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.creditCard}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Education Section - Only for Level 2 */}
+        {userLevel >= 2 && (
+          <div clab hovssName="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                مدارک تحصیلی
+                <span className="text-red-500 text-sm">*</span>
+              </h2>
+              <button
+                onClick={() => setShowAddDegree(true)}
+                disabled={profile.degrees.length >= 30}
+                className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-2 rounded-xl flex items-center gap-2 text-sm transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                افزودن مدرک
+              </button>
+            </div>
+            
+            {/* Add Degree Form */}
+            {showAddDegree && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <input
+                    type="text"
+                    placeholder="عنوان مدرک (مثل: کارشناسی روانشناسی)"
+                    value={newDegree.title}
+                    onChange={(e) => setNewDegree(prev => ({ ...prev, title: e.target.value }))}
+                    className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="نام موسسه یا دانشگاه"
+                    value={newDegree.institution}
+                    onChange={(e) => setNewDegree(prev => ({ ...prev, institution: e.target.value }))}
+                    className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="سال اخذ مدرک"
+                    value={newDegree.year}
+                    onChange={(e) => setNewDegree(prev => ({ ...prev, year: e.target.value }))}
+                    className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="رشته تحصیلی"
+                    value={newDegree.field}
+                    onChange={(e) => setNewDegree(prev => ({ ...prev, field: e.target.value }))}
+                    className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={addDegree}
+                    className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-4 py-2 rounded-xl text-sm transition-all"
+                  >
+                    <CheckCircle className="w-4 h-4 inline ml-1" />
+                    ذخیره
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowAddDegree(false);
+                      setNewDegree({ title: '', institution: '', year: '', field: '' });
+                      setErrors(prev => ({ ...prev, degree: '' }));
+                    }}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl text-sm transition-all"
+                  >
+                    <X className="w-4 h-4 inline ml-1" />
+                    انصراف
+                  </button>
+                </div>
+                
+                {errors.degree && (
+                  <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.degree}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Degrees List */}
+            <div className="space-y-3">
+              {profile.degrees.map((degree) => (
+                <div key={degree.id} className="bg-white rounded-xl p-4 border border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-800">{degree.title}</h3>
+                      <p className="text-gray-600">{degree.institution}</p>
+                      {(degree.year || degree.field) && (
+                        <div className="flex gap-4 mt-1 text-sm text-gray-500">
+                          {degree.year && <span>سال: {degree.year}</span>}
+                          {degree.field && <span>رشته: {degree.field}</span>}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeDegree(degree.id)}
+                      className="text-red-500 hover:text-red-700 p-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              {profile.degrees.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>هنوز مدرکی اضافه نشده است</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between items-center mt-4">
+              <div className="text-sm text-gray-500">
+                {profile.degrees.length}/30 مدرک
+              </div>
+              {errors.degrees && (
+                <div className="text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.degrees}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Survey Section - Only show for Level 2 completion */}
+        {userLevel === 2 && (
+          <section className="mb-8">
+            <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl p-6 shadow-lg">
+              <div className="flex items-center gap-4">
+                <div className="bg-white/20 p-3 rounded-full">
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold mb-2">تکمیل پرسشنامه</h2>
+                  <p className="text-white/90 mb-4">
+                    پس از تکمیل و ذخیره این مرحله، به صفحه پرسشنامه هدایت خواهید شد تا مرحله نهایی را تکمیل کنید.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Save Button */}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6">
+          <button
+            onClick={handleSaveProfile}
+            disabled={loading.profile}
+            className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
+          >
+            {loading.profile ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                در حال ذخیره...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                {userLevel === 1 ? 'ذخیره و ادامه به مرحله بعد' : userLevel === 2 ? 'ذخیره و رفتن به پرسشنامه' : 'ذخیره پروفایل'}
+              </>
+            )}
+          </button>
+          
+          {errors.profile && (
+            <div className="mt-4 text-sm text-red-600 flex items-center gap-1 justify-center">
+              <AlertCircle className="w-4 h-4" />
+              {errors.profile}
+            </div>
+          )}
+
+          {errors.userInfo && (
+            <div className="mt-4 text-sm text-red-600 flex items-center gap-1 justify-center">
+              <AlertCircle className="w-4 h-4" />
+              {errors.userInfo}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default UserProfilePage;
+export default MoshaverProfile;

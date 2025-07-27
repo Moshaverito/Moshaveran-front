@@ -141,7 +141,7 @@ const ContactUsPage = () => {
                 <Phone className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-lg font-bold text-gray-800 mb-2">تماس تلفنی</h3>
-              <p className="text-gray-600 text-sm mb-4">09100183929</p>
+              <p className="text-gray-600 text-sm mb-4">09367866763</p>
               <a 
                 href="tel:09100183929"
                 className="w-full inline-block bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white py-2 px-4 rounded-xl text-sm font-medium transition-all"
