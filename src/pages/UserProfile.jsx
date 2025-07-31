@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Camera, Video, Plus, X, FileText, Calendar, BookOpen, Upload, CheckCircle, AlertCircle, User, Save, Trash2, Edit3, Eye, EyeOff, Mic, CreditCard, Clock } from 'lucide-react';
+import { ArrowRight, Camera, Video, Plus, X, FileText, Calendar, BookOpen, Upload, CheckCircle, AlertCircle, User, Save, Trash2, Edit3, Eye, EyeOff, Mic, CreditCard, Clock } from 'lucide-react';
 
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
@@ -397,7 +397,7 @@ const MoshaverProfile = () => {
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button className="p-2 hover:bg-white/50 rounded-full transition-all">
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
+              <ArrowRight className="w-6 h-6 text-gray-700" />
             </button>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
               پروفایل مشاور - مرحله {userLevel}

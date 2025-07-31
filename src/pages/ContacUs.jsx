@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Phone, MessageCircle, MapPin, Clock, Send, CheckCircle, AlertCircle, Shield, Headphones, Users, Globe } from 'lucide-react';
+import { ArrowRight, Mail, Phone, MessageCircle, MapPin, Clock, Send, CheckCircle, AlertCircle, Shield, Headphones, Users, Globe } from 'lucide-react';
 
 const ContactUsPage = () => {
   const [formData, setFormData] = useState({
@@ -75,7 +75,7 @@ const ContactUsPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button className="p-2 hover:bg-white/50 rounded-full transition-all">
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
+              <ArrowRight className="w-6 h-6 text-gray-700" />
             </button>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
               تماس با ما

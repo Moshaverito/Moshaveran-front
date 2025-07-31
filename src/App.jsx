@@ -21,6 +21,8 @@ import TermsAndConditionsPage from './pages/TermsAndConditions';
 import ContactUsPage from './pages/ContacUs';
 import MoshaverProfile from './pages/UserProfile';
 import PersianHadithSpiritualPage from './pages/hh';
+import PlansPage from './pages/plans';
+import NotificationsPage from './pages/notifications';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -101,11 +103,13 @@ const App = () => {
             <Route path="/TQuestionnaire" element={<TherapistQuestionnaire />} />
             <Route path="/TermsAndConditions" element={<TermsAndConditionsPage />} />
             <Route path="/contact" element={<ContactUsPage />} />
+            <Route path="/plans" element={<PlansPage />} />
 
             {/* Public pages */}
             <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/wait" element={<CounselorWaitlist />} />
             <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/setAvailability" element={<MoshaverAvailabilityPage setIsLoggedIn={setIsLoggedIn} />} />
             {/* <Route path="/mosha" element={<MoshaverReservationPage setIsLoggedIn={setIsLoggedIn} />} /> */}
 

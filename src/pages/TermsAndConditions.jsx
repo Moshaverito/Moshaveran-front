@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Shield, User, Clock, CreditCard, RefreshCw, Lock, AlertTriangle, FileText, CheckCircle, Eye, Heart, MessageCircle, Phone, Video, Star, Menu, X, ChevronDown, Users, Award } from 'lucide-react';
+import { ArrowRight, Shield, User, Clock, CreditCard, RefreshCw, Lock, AlertTriangle, FileText, CheckCircle, Eye, Heart, MessageCircle, Phone, Video, Star, Menu, X, ChevronDown, Users, Award } from 'lucide-react';
 
 const TermsAndConditionsPage = () => {
   const [expandedSection, setExpandedSection] = useState(null);
@@ -138,7 +138,7 @@ const TermsAndConditionsPage = () => {
               onClick={() => window.history.back()}
               className="p-2 hover:bg-white/50 rounded-full transition-all"
             >
-              <ArrowLeft className="w-6 h-6 text-gray-700" />
+              <ArrowRight className="w-6 h-6 text-gray-700" />
             </button>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
               قوانین و مقررات مشاوریتو

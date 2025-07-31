@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, BookOpen, Star,ArrowLeft } from 'lucide-react';
+import { Users, BookOpen, Star,ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const AboutUs = () => {

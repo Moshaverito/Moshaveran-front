@@ -44,7 +44,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
     
     // Dispatch the custom event
     window.dispatchEvent(new Event('loginStateChanged'));
-    Notify.success(t('loginSuccess'));
+    Notify.success('ورود موفقیت أمیز بود. خوش آمدید');
     navigate('/dashboard');
   };
 
