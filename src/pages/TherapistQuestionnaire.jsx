@@ -31,7 +31,7 @@ const TherapistQuestionnaire = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await fetch('http://localhost:8000/api/questionnaire/QuestionMaking/therapist_questions/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/therapist_questions/', {
         method: 'GET',
         // headers: {
         //   'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ const TherapistQuestionnaire = () => {
         answer_text: answerText
       }));
 
-      const response = await fetch('http://localhost:8000/api/questionnaire/QuestionMaking/submit_therapist_answers/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/submit_therapist_answers/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

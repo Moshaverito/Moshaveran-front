@@ -81,7 +81,15 @@ const CounselorWaitlist = () => {
     setFormData(prev => ({ ...prev, counselorType: type }));
     setStep(2);
   };
-
+  // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
   // Validate form based on counselor type
   const validateForm = () => {
     const newErrors = {};
@@ -160,7 +168,7 @@ const CounselorWaitlist = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/Mregister/register_moshaver_from_waitlist/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mregister/register_moshaver_from_waitlist/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

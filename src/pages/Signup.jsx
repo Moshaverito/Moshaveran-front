@@ -70,7 +70,7 @@ const RegistrationPage = () => {
     try {
       const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
       
-      const response = await fetch('http://localhost:8000/api/accounts/register/sendCode/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/register/sendCode/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const RegistrationPage = () => {
     try {
       const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
       
-      const response = await fetch('http://localhost:8000/api/accounts/register/verify/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/register/verify/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ const RegistrationPage = () => {
     try {
       const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
       
-      const response = await fetch('http://localhost:8000/api/accounts/register/register/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/register/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

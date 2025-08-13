@@ -114,7 +114,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/Mlogin/login/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/Mlogin/sendCode/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/sendCode/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -182,7 +182,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/Mlogin/login/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

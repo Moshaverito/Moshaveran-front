@@ -41,19 +41,19 @@ export const Footer = () => {
             <h3 className="text-lg font-semibold mb-4">خدمات</h3>
             <ul className="space-y-2 text-blue-100">
               <li>
-                <a href="#" className="hover:text-white transition-colors">مشاوره فردی</a>
+                <a href="#" className="hover:text-white transition-colors">مشاوره تحصیلی</a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">مشاوره زوجین</a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">مشاوره نوجوانان</a>
+                <a href="#" className="hover:text-white transition-colors">مشاوره شغلی</a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">مشاوره گروهی</a>
+                <a href="#" className="hover:text-white transition-colors">مشاوره فردی</a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">مشاوره خانواده</a>
+                <a href="#" className="hover:text-white transition-colors">مشاوره اسلامی</a>
               </li>
             </ul>
           </div>
@@ -65,18 +65,18 @@ export const Footer = () => {
               <li>
                 <a href="#" className="hover:text-white transition-colors">درباره ما</a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#" className="hover:text-white transition-colors">تیم ما</a>
-              </li>
+              </li> */}
               <li>
-                <a href="#" className="hover:text-white transition-colors">شغل‌ها</a>
+                <a href="#" className="hover:text-white transition-colors">همکاری با ما</a>
               </li>
               <li>
                 <a href="#" className="hover:text-white transition-colors">اخبار</a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#" className="hover:text-white transition-colors">شرکا</a>
-              </li>
+              </li> */}
             </ul>
           </div>
 
@@ -93,12 +93,12 @@ export const Footer = () => {
               <li>
                 <a href="#" className="hover:text-white transition-colors">تماس با ما</a>
               </li>
-              <li>
+              {/* <li>
                 <a href="#" className="hover:text-white transition-colors">گزارش مشکل</a>
-              </li>
-              <li>
+              </li> */}
+              {/* <li>
                 <a href="#" className="hover:text-white transition-colors">وضعیت سرویس</a>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>
@@ -110,14 +110,14 @@ export const Footer = () => {
               <Phone className="w-5 h-5 text-yellow-400" />
               <div>
                 <div className="text-sm text-blue-200">تلفن پشتیبانی</div>
-                <div className="font-medium">۰۲۱-۱۲۳۴۵۶۷۸</div>
+                <div className="font-medium">09367866763</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Mail className="w-5 h-5 text-yellow-400" />
               <div>
                 <div className="text-sm text-blue-200">ایمیل</div>
-                <div className="font-medium">info@betterhelp.ir</div>
+                <div className="font-medium">info@moshaveritoo.ir</div>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export const Footer = () => {
             </div>
             <div className="flex items-center gap-2">
               <Video className="w-5 h-5 text-yellow-400" />
-              <span className="text-sm">ویدئو کال</span>
+              <span className="text-sm">تماس تصویری</span>
             </div>
           </div>
         </div>
@@ -155,7 +155,7 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-blue-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="text-sm text-blue-200">
-            © ۲۰۲۵ بهتر کمک. تمام حقوق محفوظ است.
+            © ۲۰۲۵ مشاوریتو تمام حقوق محفوظ است.
           </div>
           <div className="flex space-x-6 space-x-reverse mt-4 md:mt-0">
             <a href="#" className="text-sm text-blue-200 hover:text-white transition-colors">

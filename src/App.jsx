@@ -23,6 +23,8 @@ import MoshaverProfile from './pages/UserProfile';
 import PersianHadithSpiritualPage from './pages/hh';
 import PlansPage from './pages/plans';
 import NotificationsPage from './pages/notifications';
+import LiveKitPage from './pages/test';
+import WorkWithUsPage from './pages/workWithUs';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -40,7 +42,7 @@ const App = () => {
     const refreshToken = localStorage.getItem('refreshToken');
     // checks axios access token validity
     if (accessToken && refreshToken) {
-      fetch('http://localhost:8000/api/accounts/token/validate-token/', {
+      fetch('https://api.moshaveritoo.ir/api/accounts/token/validate-token/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -108,7 +110,9 @@ const App = () => {
             {/* Public pages */}
             <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/wait" element={<CounselorWaitlist />} />
+            <Route path="/test" element={<LiveKitPage />} />
             <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/joinUs" element={<WorkWithUsPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/setAvailability" element={<MoshaverAvailabilityPage setIsLoggedIn={setIsLoggedIn} />} />
             {/* <Route path="/mosha" element={<MoshaverReservationPage setIsLoggedIn={setIsLoggedIn} />} /> */}

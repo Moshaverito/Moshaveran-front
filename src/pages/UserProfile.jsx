@@ -46,7 +46,7 @@ const MoshaverProfile = () => {
     try {
       setLoading(prev => ({ ...prev, userInfo: true }));
       
-      const response = await fetch('http://localhost:8000/api/userinfo', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/moshavers/user_info/', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ const MoshaverProfile = () => {
       const formData = new FormData();
       formData.append('image', file);
 
-      const response = await fetch('http://localhost:8000/api/image_upload', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Image/', {
         method: 'POST',
         body: formData
       });
@@ -185,7 +185,7 @@ const MoshaverProfile = () => {
       const formData = new FormData();
       formData.append('video', file);
 
-      const response = await fetch('http://localhost:8000/api/video_upload', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/videos/', {
         method: 'POST',
         body: formData
       });
@@ -226,7 +226,7 @@ const MoshaverProfile = () => {
       const formData = new FormData();
       formData.append('audio', file);
 
-      const response = await fetch('http://localhost:8000/api/audio_upload', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Audio/', {
         method: 'POST',
         body: formData
       });
@@ -343,7 +343,7 @@ const MoshaverProfile = () => {
         level: userLevel === 1 ? 2 : userLevel // Move to next level if completing level 1
       };
 
-      const response = await fetch('http://localhost:8000/api/update_profile', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/moshavers/update-profile/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -390,13 +390,25 @@ const MoshaverProfile = () => {
     );
   }
 
+    // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800" dir="rtl">
       {/* Header */}
       <div className="bg-white/30 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-white/50 rounded-full transition-all">
+            <button 
+                        onClick={handleGoBack}
+
+            className="p-2 hover:bg-white/50 rounded-full transition-all">
               <ArrowRight className="w-6 h-6 text-gray-700" />
             </button>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">

@@ -111,7 +111,7 @@ const MoshaverAvailabilityPage = () => {
         }
 
         // Load existing available slots
-        const slotsResponse = await fetch('http://localhost:8000/api/sessions/availabilities/my_slots/', {
+        const slotsResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -126,7 +126,7 @@ const MoshaverAvailabilityPage = () => {
         setExistingSlots(slotsData);
         
         // Load reserved slots
-        const reservedResponse = await fetch('http://localhost:8000/api/sessions/availabilities/reserved/', {
+        const reservedResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/reserved/', {
           headers: { 
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -194,7 +194,15 @@ const MoshaverAvailabilityPage = () => {
     }
     return 'available';
   };
-
+  // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
   // Save availability slots using the weekly_time endpoint
   const saveAvailability = async () => {
     setSaving(true);
@@ -235,7 +243,7 @@ const MoshaverAvailabilityPage = () => {
         week: weekData
       };
 
-      const response = await fetch('http://localhost:8000/api/sessions/availabilities/weekly_time/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/weekly_time/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -255,7 +263,7 @@ const MoshaverAvailabilityPage = () => {
       setTimeout(() => setSuccess(false), 3000);
 
       // Reload data to reflect changes
-      const slotsResponse = await fetch('http://localhost:8000/api/sessions/availabilities/my_slots/', {
+      const slotsResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/', {
         headers: { 
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -307,7 +315,9 @@ const MoshaverAvailabilityPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <button
+             onClick={handleGoBack}              
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <ArrowRight className="w-5 h-5 text-gray-600" />
               </button>
               <div>

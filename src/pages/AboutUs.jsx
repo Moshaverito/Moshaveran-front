@@ -1,10 +1,33 @@
 import React from 'react';
 import { Users, BookOpen, Star,ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-
+const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
 const AboutUs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800 py-12 sm:py-20 px-4" dir="rtl">
+      {/* Header */}
+      <div className="bg-white/30 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center gap-4">
+            <button 
+            onClick={handleGoBack}
+            className="p-2 hover:bg-white/50 rounded-full transition-all">
+              <ArrowRight className="w-6 h-6 text-gray-700" />
+            </button>
+            <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
+              داشبورد مشاور
+            </h1>
+          
+          </div>
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto text-center">
         <motion.h1 

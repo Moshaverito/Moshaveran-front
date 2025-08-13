@@ -7,12 +7,16 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState(null);
 
-  // Mock navigation function for demo
-  const navigateBack = () => {
-    console.log('Navigate back');
-    // In your real app, use: navigate(-1)
-  };
 
+  // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
   const fetchNotifications = async () => {
     setLoading(true);
     try {
@@ -22,7 +26,7 @@ const NotificationsPage = () => {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/accounts/notify/notifList/', {
+      const res = await fetch('https://api.moshaveritoo.ir/api/accounts/notify/notifList/', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -52,7 +56,7 @@ const NotificationsPage = () => {
         return;
       }
 
-      const res = await fetch('http://localhost:8000/api/accounts/notify/seenMsg/', {
+      const res = await fetch('https://api.moshaveritoo.ir/api/accounts/notify/seenMsg/', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -102,7 +106,7 @@ const NotificationsPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <button
-              onClick={navigateBack}
+            onClick={handleGoBack}
               className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors p-2 -mr-2"
             >
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />

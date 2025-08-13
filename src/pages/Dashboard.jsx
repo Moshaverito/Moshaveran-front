@@ -36,7 +36,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/moshaver_sessions/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/moshaver_sessions/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -60,7 +60,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/history_moshaver/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/history_moshaver/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -84,7 +84,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/payment/income/monthly-income/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/monthly-income/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -108,7 +108,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/payment/income/available-income/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/available-income/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -132,7 +132,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/pending_sessions/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/pending_sessions/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -194,7 +194,7 @@ const MoshaverDashboard = () => {
         'Content-Type': 'application/json'
       };
       
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/cancel_by_moshaver/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/cancel_by_moshaver/', {
         method: 'POST',
         headers,
         body: JSON.stringify({ session_id: cancelSessionId })
@@ -227,7 +227,7 @@ const MoshaverDashboard = () => {
         'Content-Type': 'application/json'
       };
       
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/update_session_status/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/update_session_status/', {
         method: 'POST',
         headers,
         body: JSON.stringify({ 
@@ -272,7 +272,7 @@ const MoshaverDashboard = () => {
           'Content-Type': 'application/json'
         };
         
-        const response = await fetch('http://localhost:8000/api/payment/income/request-payment/', {
+        const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/request-payment/', {
           method: 'POST',
           headers,
           body: JSON.stringify({ amount: amount })
@@ -299,12 +299,20 @@ const MoshaverDashboard = () => {
       alert('خطا در درخواست پرداخت');
     }
   };
-
-  const handleLogout = () => {
-    setToken(null);
-    // In a real app, you would redirect to login
-    console.log('User logged out');
+  // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
   };
+  // const handleLogout = () => {
+  //   setToken(null);
+  //   // In a real app, you would redirect to login
+  //   console.log('User logged out');
+  // };
 
   const getSessionTypeIcon = (type) => {
     switch (type) {
@@ -411,7 +419,9 @@ const MoshaverDashboard = () => {
       <div className="bg-white/30 backdrop-blur-sm border-b border-white/20 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-white/50 rounded-full transition-all">
+            <button 
+            onClick={handleGoBack}
+            className="p-2 hover:bg-white/50 rounded-full transition-all">
               <ArrowRight className="w-6 h-6 text-gray-700" />
             </button>
             <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
@@ -425,12 +435,7 @@ const MoshaverDashboard = () => {
                   {token ? 'متصل' : 'قطع ارتباط'}
                 </span>
               </div>
-              <button 
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all text-sm"
-              >
-                خروج
-              </button>
+
             </div>
           </div>
         </div>

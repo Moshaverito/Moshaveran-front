@@ -36,7 +36,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/moshaver_sessions/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/moshaver_sessions/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -60,7 +60,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/history_moshaver/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/history_moshaver/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -84,7 +84,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/payment/income/monthly-income/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/monthly-income/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -108,7 +108,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/payment/income/available-income/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/available-income/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -132,7 +132,7 @@ const MoshaverDashboard = () => {
 
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/pending_sessions/', { headers });
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/pending_sessions/', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -194,7 +194,7 @@ const MoshaverDashboard = () => {
         'Content-Type': 'application/json'
       };
       
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/cancel_by_moshaver/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/cancel_by_moshaver/', {
         method: 'POST',
         headers,
         body: JSON.stringify({ session_id: cancelSessionId })
@@ -227,7 +227,7 @@ const MoshaverDashboard = () => {
         'Content-Type': 'application/json'
       };
       
-      const response = await fetch('http://localhost:8000/api/sessions/sessions/update_session_status/', {
+      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/sessions/update_session_status/', {
         method: 'POST',
         headers,
         body: JSON.stringify({ 
@@ -272,7 +272,7 @@ const MoshaverDashboard = () => {
           'Content-Type': 'application/json'
         };
         
-        const response = await fetch('http://localhost:8000/api/payment/income/request-payment/', {
+        const response = await fetch('https://api.moshaveritoo.ir/api/payment/income/request-payment/', {
           method: 'POST',
           headers,
           body: JSON.stringify({ amount: amount })

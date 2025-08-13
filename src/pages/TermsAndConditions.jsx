@@ -127,7 +127,15 @@ const TermsAndConditionsPage = () => {
       ]
     }
   ];
-
+  // Handle back button functionality
+  const handleGoBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // Fallback if there's no history - you can customize this
+      window.location.href = '/';
+    }
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800" dir="rtl">
       {/* Header */}
@@ -135,7 +143,7 @@ const TermsAndConditionsPage = () => {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <button 
-              onClick={() => window.history.back()}
+            onClick={handleGoBack}
               className="p-2 hover:bg-white/50 rounded-full transition-all"
             >
               <ArrowRight className="w-6 h-6 text-gray-700" />
