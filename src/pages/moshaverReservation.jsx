@@ -1,5 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowRight, Clock, Save, Calendar, CheckCircle, AlertCircle, Loader, User, Settings, Lock, Eye } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  ArrowRight,
+  Clock,
+  Save,
+  Calendar,
+  CheckCircle,
+  AlertCircle,
+  Loader,
+  User,
+  Settings,
+  Lock,
+  Eye,
+} from "lucide-react";
 
 const MoshaverAvailabilityPage = () => {
   const [selectedSlots, setSelectedSlots] = useState({});
@@ -11,31 +23,43 @@ const MoshaverAvailabilityPage = () => {
   const [success, setSuccess] = useState(false);
 
   // Persian calendar data (0 = Saturday, 1 = Sunday, ..., 6 = Friday)
-  const persianDays = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه'];
-  const persianDaysShort = ['شنبه', 'یک', 'دوش', 'سه', 'چهار', 'پنج', 'جمعه'];
-  
+  const persianDays = [
+    "شنبه",
+    "یکشنبه",
+    "دوشنبه",
+    "سه‌شنبه",
+    "چهارشنبه",
+    "پنج‌شنبه",
+    "جمعه",
+  ];
+  const persianDaysShort = ["شنبه", "یک", "دوش", "سه", "چهار", "پنج", "جمعه"];
+
   // Generate 30-minute time slots for a day (9 AM to 9 PM) - Fixed 30-minute intervals
   const generateTimeSlots = () => {
     const slots = [];
     const startHour = 9;
     const endHour = 21;
     const slotDuration = 30; // Fixed 30-minute slots
-    
+
     for (let hour = startHour; hour < endHour; hour++) {
       for (let minute = 0; minute < 60; minute += slotDuration) {
-        const startTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const startTime = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
         const endMinute = minute + slotDuration;
         const endHour = endMinute >= 60 ? hour + 1 : hour;
         const finalEndMinute = endMinute >= 60 ? endMinute - 60 : endMinute;
-        
+
         if (endHour >= 21) break; // Don't go beyond 9 PM
-        
-        const endTime = `${endHour.toString().padStart(2, '0')}:${finalEndMinute.toString().padStart(2, '0')}`;
-        
+
+        const endTime = `${endHour.toString().padStart(2, "0")}:${finalEndMinute
+          .toString()
+          .padStart(2, "0")}`;
+
         slots.push({
           startTime,
           endTime,
-          id: `${startTime}-${endTime}`
+          id: `${startTime}-${endTime}`,
         });
       }
     }
@@ -48,10 +72,10 @@ const MoshaverAvailabilityPage = () => {
   const getCurrentWeekDates = () => {
     const today = new Date();
     const currentDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    
+
     // Convert to Persian week (0 = Saturday)
     const persianCurrentDay = currentDay === 6 ? 0 : currentDay + 1;
-    
+
     const dates = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
@@ -72,27 +96,29 @@ const MoshaverAvailabilityPage = () => {
       day: date.getDate(),
       month: date.getMonth() + 1,
       persianDay: persianDay,
-      persianDayName: persianDaysShort[persianDay]
+      persianDayName: persianDaysShort[persianDay],
     };
   };
 
   // Check if a slot is reserved
   const isSlotReserved = (dayOfWeek, startTime, endTime) => {
-    return reservedSlots.some(slot => 
-      slot.day_of_week === dayOfWeek && 
-      slot.start_time === `${startTime}:00` && 
-      slot.end_time === `${endTime}:00` && 
-      slot.is_reserved
+    return reservedSlots.some(
+      (slot) =>
+        slot.day_of_week === dayOfWeek &&
+        slot.start_time === `${startTime}:00` &&
+        slot.end_time === `${endTime}:00` &&
+        slot.is_reserved
     );
   };
 
   // Check if a slot is available (from existing slots)
   const isSlotAvailable = (dayOfWeek, startTime, endTime) => {
-    return existingSlots.some(slot => 
-      slot.day_of_week === dayOfWeek && 
-      slot.start_time === `${startTime}:00` && 
-      slot.end_time === `${endTime}:00` && 
-      slot.is_active
+    return existingSlots.some(
+      (slot) =>
+        slot.day_of_week === dayOfWeek &&
+        slot.start_time === `${startTime}:00` &&
+        slot.end_time === `${endTime}:00` &&
+        slot.is_active
     );
   };
 
@@ -102,21 +128,24 @@ const MoshaverAvailabilityPage = () => {
       try {
         setLoading(true);
         setError(null);
-        
-        const token = localStorage.getItem('accessToken');
+
+        const token = localStorage.getItem("accessToken");
         if (!token) {
-          setError('لطفاً ابتدا وارد حساب کاربری خود شوید');
+          setError("لطفاً ابتدا وارد حساب کاربری خود شوید");
           setLoading(false);
           return;
         }
 
         // Load existing available slots
-        const slotsResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const slotsResponse = await fetch(
+          "https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
 
         if (!slotsResponse.ok) {
           throw new Error(`HTTP error! status: ${slotsResponse.status}`);
@@ -124,33 +153,38 @@ const MoshaverAvailabilityPage = () => {
 
         const slotsData = await slotsResponse.json();
         setExistingSlots(slotsData);
-        
+
         // Load reserved slots
-        const reservedResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/reserved/', {
-          headers: { 
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const reservedResponse = await fetch(
+          "https://api.moshaveritoo.ir/api/sessions/availabilities/reserved/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
 
         if (reservedResponse.ok) {
           const reservedData = await reservedResponse.json();
           setReservedSlots(reservedData);
         }
-        
+
         // Convert existing available slots to selectedSlots format
         const selected = {};
-        slotsData.forEach(slot => {
+        slotsData.forEach((slot) => {
           if (slot.is_active) {
-            const key = `${slot.day_of_week}-${slot.start_time.substring(0, 5)}-${slot.end_time.substring(0, 5)}`;
+            const key = `${slot.day_of_week}-${slot.start_time.substring(
+              0,
+              5
+            )}-${slot.end_time.substring(0, 5)}`;
             selected[key] = true;
           }
         });
         setSelectedSlots(selected);
-        
       } catch (err) {
-        setError('خطا در بارگذاری اطلاعات: ' + err.message);
-        console.error('Error loading data:', err);
+        setError("خطا در بارگذاری اطلاعات: " + err.message);
+        console.error("Error loading data:", err);
       } finally {
         setLoading(false);
       }
@@ -163,15 +197,15 @@ const MoshaverAvailabilityPage = () => {
   const toggleSlot = (dayIndex, slot) => {
     const dayOfWeek = formatDate(weekDates[dayIndex]).persianDay;
     const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
-    
+
     // Don't allow toggling reserved slots
     if (isSlotReserved(dayOfWeek, slot.startTime, slot.endTime)) {
       return;
     }
-    
-    setSelectedSlots(prev => ({
+
+    setSelectedSlots((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
   };
 
@@ -185,14 +219,14 @@ const MoshaverAvailabilityPage = () => {
   // Get slot status (available, selected, reserved)
   const getSlotStatus = (dayIndex, slot) => {
     const dayOfWeek = formatDate(weekDates[dayIndex]).persianDay;
-    
+
     if (isSlotReserved(dayOfWeek, slot.startTime, slot.endTime)) {
-      return 'reserved';
+      return "reserved";
     }
     if (isSlotSelected(dayIndex, slot)) {
-      return 'selected';
+      return "selected";
     }
-    return 'available';
+    return "available";
   };
   // Handle back button functionality
   const handleGoBack = () => {
@@ -200,39 +234,39 @@ const MoshaverAvailabilityPage = () => {
       window.history.back();
     } else {
       // Fallback if there's no history - you can customize this
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
   // Save availability slots using the weekly_time endpoint
   const saveAvailability = async () => {
     setSaving(true);
     setError(null);
-    
+
     try {
-      const token = localStorage.getItem('accessToken');
+      const token = localStorage.getItem("accessToken");
       if (!token) {
-        setError('لطفاً ابتدا وارد حساب کاربری خود شوید');
+        setError("لطفاً ابتدا وارد حساب کاربری خود شوید");
         setSaving(false);
         return;
       }
 
       // Organize selected slots by day
       const weekData = {};
-      
+
       Object.entries(selectedSlots).forEach(([key, isSelected]) => {
         if (isSelected) {
-          const [dayOfWeek, startTime, endTime] = key.split('-');
+          const [dayOfWeek, startTime, endTime] = key.split("-");
           const dayIndex = parseInt(dayOfWeek);
-          
+
           if (!weekData[dayIndex]) {
             weekData[dayIndex] = [];
           }
-          
+
           // Use HH:MM format as required by API
           weekData[dayIndex].push({
             start: startTime,
             end: endTime,
-            is_active: true
+            is_active: true,
           });
         }
       });
@@ -240,44 +274,51 @@ const MoshaverAvailabilityPage = () => {
       // Prepare the request body according to your API format
       const requestBody = {
         replace: true,
-        week: weekData
+        week: weekData,
       };
 
-      const response = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/weekly_time/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/sessions/availabilities/weekly_time/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        throw new Error(
+          errorData.message || `HTTP error! status: ${response.status}`
+        );
       }
 
       const result = await response.json();
-      
+
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
 
       // Reload data to reflect changes
-      const slotsResponse = await fetch('https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/', {
-        headers: { 
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const slotsResponse = await fetch(
+        "https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
-      });
-      
+      );
+
       if (slotsResponse.ok) {
         const updatedSlots = await slotsResponse.json();
         setExistingSlots(updatedSlots);
       }
-      
     } catch (err) {
-      setError('خطا در ذخیره زمان‌های دسترسی: ' + err.message);
-      console.error('Error saving slots:', err);
+      setError("خطا در ذخیره زمان‌های دسترسی: " + err.message);
+      console.error("Error saving slots:", err);
     } finally {
       setSaving(false);
     }
@@ -293,13 +334,16 @@ const MoshaverAvailabilityPage = () => {
     const totalMinutes = getSelectedSlotsCount() * 30;
     return {
       hours: Math.floor(totalMinutes / 60),
-      minutes: totalMinutes % 60
+      minutes: totalMinutes % 60,
     };
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
+      <div
+        className="min-h-screen bg-gray-50 flex items-center justify-center"
+        dir="rtl"
+      >
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">در حال بارگذاری...</p>
@@ -316,15 +360,18 @@ const MoshaverAvailabilityPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
-             onClick={handleGoBack}              
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                onClick={handleGoBack}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors bg-inherit"
+              >
                 <ArrowRight className="w-5 h-5 text-gray-600" />
               </button>
               <div>
                 <h1 className="text-2xl font-semibold text-gray-900">
                   تنظیم زمان‌های دسترسی
                 </h1>
-                <p className="text-sm text-gray-500">زمان‌هایی که برای مشاوره در دسترس هستید را انتخاب کنید</p>
+                <p className="text-sm text-gray-500">
+                  زمان‌هایی که برای مشاوره در دسترس هستید را انتخاب کنید
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -361,7 +408,9 @@ const MoshaverAvailabilityPage = () => {
 
               {/* Legend */}
               <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">راهنما:</h4>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  راهنما:
+                </h4>
                 <div className="space-y-3 text-sm">
                   <div className="flex items-center gap-3">
                     <div className="w-4 h-4 bg-blue-500 rounded"></div>
@@ -385,14 +434,20 @@ const MoshaverAvailabilityPage = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">بازه‌های انتخابی:</span>
-                    <span className="font-medium text-gray-900">{getSelectedSlotsCount()}</span>
+                    <span className="font-medium text-gray-900">
+                      {getSelectedSlotsCount()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">مجموع زمان:</span>
                     <span className="font-medium text-gray-900">
                       {(() => {
                         const { hours, minutes } = getTotalHours();
-                        return hours > 0 ? `${hours} ساعت ${minutes > 0 ? `و ${minutes} دقیقه` : ''}` : `${minutes} دقیقه`;
+                        return hours > 0
+                          ? `${hours} ساعت ${
+                              minutes > 0 ? `و ${minutes} دقیقه` : ""
+                            }`
+                          : `${minutes} دقیقه`;
                       })()}
                     </span>
                   </div>
@@ -405,7 +460,10 @@ const MoshaverAvailabilityPage = () => {
                   <Eye className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">نکته مهم:</p>
-                    <p>هر بازه ۳۰ دقیقه‌ای است. مراجعان می‌توانند جلسات ۳۰، ۴۵ یا ۶۰ دقیقه‌ای رزرو کنند.</p>
+                    <p>
+                      هر بازه ۳۰ دقیقه‌ای است. مراجعان می‌توانند جلسات ۳۰، ۴۵ یا
+                      ۶۰ دقیقه‌ای رزرو کنند.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -456,11 +514,18 @@ const MoshaverAvailabilityPage = () => {
                   {weekDates.map((date, dayIndex) => {
                     const formattedDate = formatDate(date);
                     const daySlots = timeSlots;
-                    const selectedCount = daySlots.filter(slot => getSlotStatus(dayIndex, slot) === 'selected').length;
-                    const reservedCount = daySlots.filter(slot => getSlotStatus(dayIndex, slot) === 'reserved').length;
-                    
+                    const selectedCount = daySlots.filter(
+                      (slot) => getSlotStatus(dayIndex, slot) === "selected"
+                    ).length;
+                    const reservedCount = daySlots.filter(
+                      (slot) => getSlotStatus(dayIndex, slot) === "reserved"
+                    ).length;
+
                     return (
-                      <div key={dayIndex} className="border border-gray-200 rounded-lg overflow-hidden">
+                      <div
+                        key={dayIndex}
+                        className="border border-gray-200 rounded-lg overflow-hidden"
+                      >
                         {/* Day Header */}
                         <div className="bg-gray-50 px-3 py-2 border-b">
                           <div className="text-center">
@@ -474,26 +539,38 @@ const MoshaverAvailabilityPage = () => {
                         </div>
 
                         {/* Time Slots */}
-                        <div className="p-2 space-y-1" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                        <div
+                          className="p-2 space-y-1 custom-scrollbar"
+                          style={{
+                            maxHeight: "400px",
+                            overflowY: "auto",
+                            scrollbarWidth: "thin",
+                            scrollbarColor: "#3b82f6 #f3f4f6",
+                          }}
+                        >
                           {daySlots.map((slot) => {
                             const status = getSlotStatus(dayIndex, slot);
-                            
+
                             return (
                               <button
                                 key={slot.id}
                                 onClick={() => toggleSlot(dayIndex, slot)}
-                                disabled={status === 'reserved'}
+                                disabled={status === "reserved"}
                                 className={`w-full p-2 rounded text-xs font-medium transition-colors ${
-                                  status === 'selected'
-                                    ? 'bg-blue-500 text-white'
-                                    : status === 'reserved'
-                                    ? 'bg-red-500 text-white cursor-not-allowed'
-                                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200'
+                                  status === "selected"
+                                    ? "bg-blue-500 text-white"
+                                    : status === "reserved"
+                                    ? "bg-red-500 text-white cursor-not-allowed"
+                                    : "bg-white hover:bg-gray-50 text-gray-700 border border-gray-200"
                                 }`}
                               >
                                 <div className="flex items-center justify-center gap-1">
-                                  {status === 'reserved' && <Lock className="w-3 h-3" />}
-                                  <span>{slot.startTime} - {slot.endTime}</span>
+                                  {status === "reserved" && (
+                                    <Lock className="w-3 h-3" />
+                                  )}
+                                  <span>
+                                    {slot.startTime} - {slot.endTime}
+                                  </span>
                                 </div>
                               </button>
                             );
@@ -534,8 +611,14 @@ const MoshaverAvailabilityPage = () => {
                         const allSlots = {};
                         weekDates.forEach((date, dayIndex) => {
                           const dayOfWeek = formatDate(date).persianDay;
-                          timeSlots.forEach(slot => {
-                            if (!isSlotReserved(dayOfWeek, slot.startTime, slot.endTime)) {
+                          timeSlots.forEach((slot) => {
+                            if (
+                              !isSlotReserved(
+                                dayOfWeek,
+                                slot.startTime,
+                                slot.endTime
+                              )
+                            ) {
                               const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
                               allSlots[key] = true;
                             }
@@ -547,7 +630,7 @@ const MoshaverAvailabilityPage = () => {
                     >
                       انتخاب همه
                     </button>
-                    
+
                     <button
                       onClick={() => setSelectedSlots({})}
                       className="px-4 py-2 bg-gray-50 text-gray-700 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors"
@@ -560,15 +643,25 @@ const MoshaverAvailabilityPage = () => {
                         const morningSlots = {};
                         weekDates.forEach((date, dayIndex) => {
                           const dayOfWeek = formatDate(date).persianDay;
-                          timeSlots.filter(slot => {
-                            const hour = parseInt(slot.startTime.split(':')[0]);
-                            return hour >= 9 && hour < 12;
-                          }).forEach(slot => {
-                            if (!isSlotReserved(dayOfWeek, slot.startTime, slot.endTime)) {
-                              const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
-                              morningSlots[key] = true;
-                            }
-                          });
+                          timeSlots
+                            .filter((slot) => {
+                              const hour = parseInt(
+                                slot.startTime.split(":")[0]
+                              );
+                              return hour >= 9 && hour < 12;
+                            })
+                            .forEach((slot) => {
+                              if (
+                                !isSlotReserved(
+                                  dayOfWeek,
+                                  slot.startTime,
+                                  slot.endTime
+                                )
+                              ) {
+                                const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
+                                morningSlots[key] = true;
+                              }
+                            });
                         });
                         setSelectedSlots(morningSlots);
                       }}
@@ -582,15 +675,25 @@ const MoshaverAvailabilityPage = () => {
                         const afternoonSlots = {};
                         weekDates.forEach((date, dayIndex) => {
                           const dayOfWeek = formatDate(date).persianDay;
-                          timeSlots.filter(slot => {
-                            const hour = parseInt(slot.startTime.split(':')[0]);
-                            return hour >= 14 && hour < 18;
-                          }).forEach(slot => {
-                            if (!isSlotReserved(dayOfWeek, slot.startTime, slot.endTime)) {
-                              const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
-                              afternoonSlots[key] = true;
-                            }
-                          });
+                          timeSlots
+                            .filter((slot) => {
+                              const hour = parseInt(
+                                slot.startTime.split(":")[0]
+                              );
+                              return hour >= 14 && hour < 18;
+                            })
+                            .forEach((slot) => {
+                              if (
+                                !isSlotReserved(
+                                  dayOfWeek,
+                                  slot.startTime,
+                                  slot.endTime
+                                )
+                              ) {
+                                const key = `${dayOfWeek}-${slot.startTime}-${slot.endTime}`;
+                                afternoonSlots[key] = true;
+                              }
+                            });
                         });
                         setSelectedSlots(afternoonSlots);
                       }}

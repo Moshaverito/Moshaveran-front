@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Bell, CheckCircle, RefreshCcw, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import {
+  Bell,
+  CheckCircle,
+  RefreshCcw,
+  ArrowRight,
+  Loader2,
+} from "lucide-react";
 
 const NotificationsPage = () => {
   const [notifications, setNotifications] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false);
   const [markingAsRead, setMarkingAsRead] = useState(null);
-
 
   // Handle back button functionality
   const handleGoBack = () => {
@@ -14,25 +19,28 @@ const NotificationsPage = () => {
       window.history.back();
     } else {
       // Fallback if there's no history - you can customize this
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        console.error('No access token found');
+        console.error("No access token found");
         return;
       }
 
-      const res = await fetch('https://api.moshaveritoo.ir/api/accounts/notify/notifList/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const res = await fetch(
+        "https://api.moshaveritoo.ir/api/accounts/notify/notifList/",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -41,7 +49,7 @@ const NotificationsPage = () => {
       const data = await res.json();
       setNotifications(data);
     } catch (err) {
-      console.error('Failed to fetch notifications:', err);
+      console.error("Failed to fetch notifications:", err);
     } finally {
       setLoading(false);
     }
@@ -50,29 +58,32 @@ const NotificationsPage = () => {
   const markAsRead = async (notifId) => {
     setMarkingAsRead(notifId);
     try {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = localStorage.getItem("accessToken");
       if (!accessToken) {
-        console.error('No access token found');
+        console.error("No access token found");
         return;
       }
 
-      const res = await fetch('https://api.moshaveritoo.ir/api/accounts/notify/seenMsg/', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ notif_id: notifId }),
-      });
+      const res = await fetch(
+        "https://api.moshaveritoo.ir/api/accounts/notify/seenMsg/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ notif_id: notifId }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
       // Remove the notification from the list since it's now seen
-      setNotifications(prev => prev.filter(n => n.id !== notifId));
+      setNotifications((prev) => prev.filter((n) => n.id !== notifId));
     } catch (err) {
-      console.error('Failed to mark as read:', err);
+      console.error("Failed to mark as read:", err);
     } finally {
       setMarkingAsRead(null);
     }
@@ -96,26 +107,31 @@ const NotificationsPage = () => {
     if (days > 0) return `${days} روز پیش`;
     if (hours > 0) return `${hours} ساعت پیش`;
     if (minutes > 0) return `${minutes} دقیقه پیش`;
-    return 'همین الان';
+    return "همین الان";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800"
+      dir="rtl"
+    >
       {/* Header with Back Button - Mobile Optimized */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between">
             <button
-            onClick={handleGoBack}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors p-2 -mr-2"
+              onClick={handleGoBack}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors p-2 -mr-2 bg-white"
             >
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="text-sm sm:text-base">بازگشت</span>
             </button>
-            
+
             <div className="flex items-center gap-2">
               <Bell className="w-6 h-6 sm:w-7 sm:h-7 text-teal-600" />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">اعلان‌ها</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-800">
+                اعلان‌ها
+              </h1>
               {unreadCount > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                   {unreadCount}
@@ -128,7 +144,11 @@ const NotificationsPage = () => {
               disabled={loading}
               className="p-2 rounded-full bg-teal-50 text-teal-600 hover:bg-teal-100 transition-colors disabled:opacity-50"
             >
-              <RefreshCcw className={`w-5 h-5 sm:w-6 sm:h-6 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCcw
+                className={`w-5 h-5 sm:w-6 sm:h-6 ${
+                  loading ? "animate-spin" : ""
+                }`}
+              />
             </button>
           </div>
         </div>
@@ -148,7 +168,7 @@ const NotificationsPage = () => {
               </p>
             </div>
             <div className="text-2xl sm:text-3xl">
-              {unreadCount === 0 ? '✅' : '📢'}
+              {unreadCount === 0 ? "✅" : "📢"}
             </div>
           </div>
         </div>
@@ -157,7 +177,9 @@ const NotificationsPage = () => {
         {loading ? (
           <div className="text-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto mb-4" />
-            <p className="text-gray-600 text-sm sm:text-base">در حال بارگذاری اعلان‌ها...</p>
+            <p className="text-gray-600 text-sm sm:text-base">
+              در حال بارگذاری اعلان‌ها...
+            </p>
           </div>
         ) : notifications.length === 0 ? (
           /* Empty State */
@@ -202,7 +224,7 @@ const NotificationsPage = () => {
                         {formatDate(notification.created_at)}
                       </span>
                     </div>
-                    
+
                     <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-3 sm:mb-4">
                       {notification.text}
                     </p>

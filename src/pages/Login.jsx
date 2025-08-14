@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Phone, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Notify } from 'notiflix';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Translation, useTranslation } from "react-i18next";
+import { Notify } from "notiflix";
 
 const MoshaveritoLogin = ({ setIsLoggedIn }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [loginType, setLoginType] = useState('regular'); // 'regular' or 'otp'
+  const [loginType, setLoginType] = useState("regular"); // 'regular' or 'otp'
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    phone: '',
-    password: '',
-    otpCode: ''
+    phone: "",
+    password: "",
+    otpCode: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
     let interval;
     if (otpTimer > 0) {
       interval = setInterval(() => {
-        setOtpTimer(prev => prev - 1);
+        setOtpTimer((prev) => prev - 1);
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -33,19 +33,19 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
   // Handle login success
   const handleLoginSuccess = (data) => {
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('accessToken', data.data.access);
-    localStorage.setItem('refreshToken', data.data.refresh);
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("accessToken", data.data.access);
+    localStorage.setItem("refreshToken", data.data.refresh);
     // localStorage.setItem('userRole', data.role);
     // localStorage.setItem('streak', data.streak);
-    
+
     // Update the parent App.jsx state
-    setIsLoggedIn(true); 
-    
+    setIsLoggedIn(true);
+
     // Dispatch the custom event
-    window.dispatchEvent(new Event('loginStateChanged'));
-    Notify.success('ورود موفقیت أمیز بود. خوش آمدید');
-    navigate('/dashboard');
+    window.dispatchEvent(new Event("loginStateChanged"));
+    Notify.success("ورود موفقیت أمیز بود. خوش آمدید");
+    navigate("/dashboard");
   };
 
   // Iranian phone number validation
@@ -57,16 +57,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -75,31 +75,31 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
   const validateForm = () => {
     const newErrors = {};
 
-    if (loginType === 'regular') {
+    if (loginType === "regular") {
       // Regular login validation
       if (!formData.phone) {
-        newErrors.phone = 'لطفاً شماره موبایل خود را وارد کنید';
+        newErrors.phone = "لطفاً شماره موبایل خود را وارد کنید";
       } else if (!validateIranianPhone(formData.phone)) {
-        newErrors.phone = 'شماره موبایل باید ایرانی باشد';
+        newErrors.phone = "شماره موبایل باید ایرانی باشد";
       }
 
       if (!formData.password) {
-        newErrors.password = 'لطفاً رمز عبور خود را وارد کنید';
+        newErrors.password = "لطفاً رمز عبور خود را وارد کنید";
       } else if (formData.password.length < 6) {
-        newErrors.password = 'رمز عبور باید حداقل ۶ کاراکتر باشد';
+        newErrors.password = "رمز عبور باید حداقل ۶ کاراکتر باشد";
       }
     } else {
       // OTP login validation
       if (!formData.phone) {
-        newErrors.phone = 'لطفاً شماره موبایل خود را وارد کنید';
+        newErrors.phone = "لطفاً شماره موبایل خود را وارد کنید";
       } else if (!validateIranianPhone(formData.phone)) {
-        newErrors.phone = 'شماره موبایل باید ایرانی باشد';
+        newErrors.phone = "شماره موبایل باید ایرانی باشد";
       }
 
       if (showOtpInput && !formData.otpCode) {
-        newErrors.otpCode = 'لطفاً کد تأیید را وارد کنید';
+        newErrors.otpCode = "لطفاً کد تأیید را وارد کنید";
       } else if (showOtpInput && formData.otpCode.length !== 6) {
-        newErrors.otpCode = 'کد تأیید باید ۶ رقم باشد';
+        newErrors.otpCode = "کد تأیید باید ۶ رقم باشد";
       }
     }
 
@@ -114,28 +114,31 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.phone,
-          password: formData.password
-        }),
-      });
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.phone,
+            password: formData.password,
+          }),
+        }
+      );
 
       const data = await response.json();
-      console.log(' dataToken:', data);
+      console.log(" dataToken:", data);
 
       if (response.ok) {
         // Login successful - use the handleLoginSuccess function
         handleLoginSuccess(data);
       } else {
-        setErrors({ general: data.message || 'خطا در ورود' });
+        setErrors({ general: data.message || "خطا در ورود" });
       }
     } catch (error) {
-      setErrors({ general: 'خطا در اتصال به سرور' });
+      setErrors({ general: "خطا در اتصال به سرور" });
     } finally {
       setLoading(false);
     }
@@ -148,28 +151,31 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/sendCode/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.phone
-        }),
-      });
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/accounts/Mlogin/sendCode/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.phone,
+          }),
+        }
+      );
 
       const data = await response.json();
-      
+
       if (response.ok) {
         setOtpSent(true);
         setShowOtpInput(true);
         setOtpTimer(120); // 2 minutes
-        Notify.success(t('otpSent'));
+        Notify.success(t("کد ارسال شد"));
       } else {
-        setErrors({ general: data.message || 'خطا در ارسال کد تأیید' });
+        setErrors({ general: data.message || "خطا در ارسال کد تأیید" });
       }
     } catch (error) {
-      setErrors({ general: 'خطا در اتصال به سرور' });
+      setErrors({ general: "خطا در اتصال به سرور" });
     } finally {
       setLoading(false);
     }
@@ -182,29 +188,32 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
     setLoading(true);
     try {
-      const response = await fetch('https://api.moshaveritoo.ir/api/accounts/Mlogin/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.phone,
-          code: formData.otpCode,
-          mode: 'otp'
-        }),
-      });
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: formData.phone,
+            code: formData.otpCode,
+            mode: "otp",
+          }),
+        }
+      );
 
       const data = await response.json();
-      console.log(' dataToken:', data);
+      console.log(" dataToken:", data);
 
       if (response.ok) {
         // Login successful - use the handleLoginSuccess function
         handleLoginSuccess(data);
       } else {
-        setErrors({ general: data.message || 'کد تأیید نادرست است' });
+        setErrors({ general: data.message || "کد تأیید نادرست است" });
       }
     } catch (error) {
-      setErrors({ general: 'خطا در اتصال به سرور' });
+      setErrors({ general: "خطا در اتصال به سرور" });
     } finally {
       setLoading(false);
     }
@@ -214,11 +223,14 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
   const formatTimer = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center"
+      dir="rtl"
+    >
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8">
@@ -226,7 +238,9 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
             مُشاوِریتو
           </h1>
           <p className="text-base sm:text-lg text-gray-600">
-            {loginType === 'regular' ? 'ورود به حساب کاربری' : 'ورود با کد تأیید'}
+            {loginType === "regular"
+              ? "ورود به حساب کاربری"
+              : "ورود با کد تأیید"}
           </p>
         </div>
 
@@ -236,16 +250,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
             <button
               type="button"
               onClick={() => {
-                setLoginType('regular');
-                setFormData({ phone: '', password: '', otpCode: '' });
+                setLoginType("regular");
+                setFormData({ phone: "", password: "", otpCode: "" });
                 setErrors({});
                 setOtpSent(false);
                 setShowOtpInput(false);
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
-                loginType === 'regular'
-                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
+                loginType === "regular"
+                  ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100 bg-inherit"
               }`}
             >
               ورود معمولی
@@ -253,16 +267,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
             <button
               type="button"
               onClick={() => {
-                setLoginType('otp');
-                setFormData({ phone: '', password: '', otpCode: '' });
+                setLoginType("otp");
+                setFormData({ phone: "", password: "", otpCode: "" });
                 setErrors({});
                 setOtpSent(false);
                 setShowOtpInput(false);
               }}
               className={`flex-1 py-3 px-4 rounded-xl font-bold transition-all duration-300 ${
-                loginType === 'otp'
-                  ? 'bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md'
-                  : 'text-gray-600 hover:bg-gray-100'
+                loginType === "otp"
+                  ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100 bg-inherit"
               }`}
             >
               ورود با کد تأیید
@@ -279,7 +293,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
             </div>
           )}
 
-          {loginType === 'regular' ? (
+          {loginType === "regular" ? (
             /* Regular Login Form */
             <div className="space-y-6">
               {/* Phone Input */}
@@ -294,9 +308,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                    className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
+                    className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 bg-gray-50 placeholder:text-gray-400 text-gray-900"
                   />
-                  <div className="absolute right-3 top-3 text-gray-400">
+                  <div
+                    className="absolute right-3 text-gray-400"
+                    style={{
+                      top: "50%",
+                      left: "0",
+                      transform: "translateY(-50%)",
+                    }}
+                  >
                     <Phone className="w-6 h-6" />
                   </div>
                 </div>
@@ -312,22 +333,37 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
                     placeholder="رمز عبور خود را وارد کنید"
-                    className="w-full pr-12 pl-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
+                    className="w-full pr-12 pl-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 bg-gray-50 placeholder:text-gray-400 text-gray-900"
                   />
-                  <div className="absolute right-3 top-3 text-gray-400">
+                  <div
+                    className="absolute right-3 text-gray-400"
+                    style={{
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                    }}
+                  >
                     <Lock className="w-6 h-6" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-3 text-gray-400 hover:text-gray-600"
+                    className="absolute text-gray-400 hover:text-gray-600 bg-inherit"
+                    style={{
+                      top: "50%",
+                      left: "0",
+                      transform: "translateY(-50%)",
+                    }}
                   >
-                    {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                    {showPassword ? (
+                      <EyeOff className="w-6 h-6" />
+                    ) : (
+                      <Eye className="w-6 h-6" />
+                    )}
                   </button>
                 </div>
                 {errors.password && (
@@ -367,7 +403,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                     value={formData.phone}
                     onChange={handleInputChange}
                     placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                    className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300"
+                    className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 bg-gray-50 placeholder:text-gray-400 text-gray-900"
                     disabled={showOtpInput}
                   />
                   <div className="absolute right-3 top-3 text-gray-400">
@@ -392,10 +428,12 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                     onChange={handleInputChange}
                     placeholder="کد ۶ رقمی را وارد کنید"
                     maxLength="6"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-center text-lg tracking-widest"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 text-center text-lg tracking-widest bg-gray-50 placeholder:text-gray-400 text-gray-900"
                   />
                   {errors.otpCode && (
-                    <p className="text-red-500 text-sm mt-1">{errors.otpCode}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.otpCode}
+                    </p>
                   )}
                 </div>
               )}
@@ -403,14 +441,19 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
               {/* Timer Display */}
               {showOtpInput && otpTimer > 0 && (
                 <div className="text-center text-gray-600">
-                  <p>درخواست مجدد کد تأیید تا {formatTimer(otpTimer)} دیگر امکان‌پذیر است</p>
+                  <p>
+                    درخواست مجدد کد تأیید تا {formatTimer(otpTimer)} دیگر
+                    امکان‌پذیر است
+                  </p>
                 </div>
               )}
 
               {/* Submit Button */}
               <button
                 type="button"
-                onClick={showOtpInput ? handleOtpVerification : handleOtpRequest}
+                onClick={
+                  showOtpInput ? handleOtpVerification : handleOtpRequest
+                }
                 disabled={loading}
                 className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
@@ -434,7 +477,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                 <button
                   type="button"
                   onClick={handleOtpRequest}
-                  className="w-full border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105"
+                  className="w-full border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 bg-inherit"
                 >
                   ارسال مجدد کد تأیید
                 </button>
@@ -445,7 +488,15 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
         {/* Footer */}
         <div className="text-center mt-6 text-gray-600">
-          <p>حساب کاربری ندارید؟ <a href="/signup" className="text-teal-600 hover:text-teal-700 font-bold">ثبت نام کنید</a></p>
+          <p>
+            حساب کاربری ندارید؟{" "}
+            <a
+              href="/signup"
+              className="text-teal-600 hover:text-teal-700 font-bold"
+            >
+              ثبت نام کنید
+            </a>
+          </p>
         </div>
       </div>
     </div>
