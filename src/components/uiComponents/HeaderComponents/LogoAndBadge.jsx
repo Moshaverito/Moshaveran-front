@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+/* eslint react/prop-types: 0 */
+
 function LogoAndBadge({ closeMobileMenu }) {
   return (
     <div className="flex items-center gap-2 sm:gap-4">
@@ -6,7 +8,7 @@ function LogoAndBadge({ closeMobileMenu }) {
         <Link
           to="/"
           className="relative overflow-hidden"
-          onClick={closeMobileMenu}
+          onClick={() => closeMobileMenu()}
         >
           مشاوریتو
         </Link>
