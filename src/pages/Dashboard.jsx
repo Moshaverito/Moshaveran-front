@@ -861,7 +861,7 @@ const MoshaverDashboard = () => {
                 <h3 className="text-xl font-bold">همه جلسات</h3>
                 <button
                   onClick={() => setShowSessionModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-full"
+                  className="p-2 hover:bg-gray-100 rounded-full bg-inherit"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -871,9 +871,9 @@ const MoshaverDashboard = () => {
                 {currentSessions.map((session) => (
                   <div key={session.id} className="bg-gray-50 rounded-xl p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-6">
                         <div
-                          className={`p-2 rounded-full ${getSessionTypeColor(
+                          className={` p-2 rounded-full ${getSessionTypeColor(
                             session.session_type
                           )}`}
                         >
@@ -893,7 +893,7 @@ const MoshaverDashboard = () => {
                       </div>
                       <button
                         onClick={() => handleCancelSession(session.id)}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        className="text-red-500 hover:text-red-700 p-1 bg-inherit"
                       >
                         <X className="w-4 h-4" />
                       </button>

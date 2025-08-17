@@ -1,9 +1,17 @@
 import { LogOut, Settings, User } from "lucide-react";
 import UserMenuDropDownLink from "./UserMenuDropDownLink";
+import { useLogOut } from "../../../hooks/useLogOut";
 
 /* eslint react/prop-types: 0 */
 
 function UserMenuDropDown({ setUserMenuOpen }) {
+  const { logout } = useLogOut();
+
+  function handleLogout() {
+    logout();
+    localStorage.clear();
+    window.location.reload();
+  }
   return (
     <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">
       <UserMenuDropDownLink
@@ -30,7 +38,11 @@ function UserMenuDropDown({ setUserMenuOpen }) {
         تنظیم برنامه هفتگی
       </UserMenuDropDownLink>
       <hr className="my-1" />
-      <UserMenuDropDownLink type={`logout`}>
+      <UserMenuDropDownLink
+        type={`logout`}
+        handleLogout={handleLogout}
+        setUserMenuOpen={setUserMenuOpen}
+      >
         <LogOut className="w-4 h-4" />
         خروج
       </UserMenuDropDownLink>

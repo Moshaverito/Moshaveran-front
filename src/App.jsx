@@ -30,6 +30,7 @@ import PlansPage from "./pages/plans";
 import NotificationsPage from "./pages/notifications";
 import LiveKitPage from "./pages/test";
 import WorkWithUsPage from "./pages/workWithUs";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -79,63 +80,75 @@ const App = () => {
     localStorage.removeItem("refreshToken");
     setIsLoggedIn(false);
   };
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 0,
+      },
+    },
+  });
 
   return (
     <Router>
-      <GoftinoSnippet
-        goftinoKey={GOFTINO_KEY}
-        onReady={() => window.Goftino.close()}
-      />
-      <div>
-        <Layout
-          isLoggedIn={isLoggedIn}
-          setIsLoggedIn={setIsLoggedIn}
-          isDarkTheme={isDarkTheme}
-          toggleTheme={toggleTheme}
-          handleLogout={handleLogout}
-        >
-          <Routes>
-            {/* Login Routes */}
-            <Route path="*" element={<NotFound />} />
-            <Route path="/" element={<TherapistHomePage />} />
-            <Route
-              path="/Profile"
-              element={<MoshaverProfile setIsLoggedIn={setIsLoggedIn} />}
-            />
-            <Route
-              path="/login"
-              element={<Login setIsLoggedIn={setIsLoggedIn} />}
-            />
-            <Route path="/signup" element={<RegistrationPage />} />
-            <Route path="/ConsultantProfile" element={<ConsultantProfile />} />
-            <Route
-              path="/TQuestionnaire"
-              element={<TherapistQuestionnaire />}
-            />
-            <Route
-              path="/TermsAndConditions"
-              element={<TermsAndConditionsPage />}
-            />
-            <Route path="/contact" element={<ContactUsPage />} />
-            <Route path="/plans" element={<PlansPage />} />
+      <QueryClientProvider client={queryClient}>
+        <GoftinoSnippet
+          goftinoKey={GOFTINO_KEY}
+          onReady={() => window.Goftino.close()}
+        />
+        <div>
+          <Layout
+            isLoggedIn={isLoggedIn}
+            setIsLoggedIn={setIsLoggedIn}
+            isDarkTheme={isDarkTheme}
+            toggleTheme={toggleTheme}
+            handleLogout={handleLogout}
+          >
+            <Routes>
+              {/* Login Routes */}
+              <Route path="*" element={<NotFound />} />
+              <Route path="/" element={<TherapistHomePage />} />
+              <Route
+                path="/Profile"
+                element={<MoshaverProfile setIsLoggedIn={setIsLoggedIn} />}
+              />
+              <Route
+                path="/login"
+                element={<Login setIsLoggedIn={setIsLoggedIn} />}
+              />
+              <Route path="/signup" element={<RegistrationPage />} />
+              <Route
+                path="/ConsultantProfile"
+                element={<ConsultantProfile />}
+              />
+              <Route
+                path="/TQuestionnaire"
+                element={<TherapistQuestionnaire />}
+              />
+              <Route
+                path="/TermsAndConditions"
+                element={<TermsAndConditionsPage />}
+              />
+              <Route path="/contact" element={<ContactUsPage />} />
+              <Route path="/plans" element={<PlansPage />} />
 
-            {/* Public pages */}
-            <Route path="/Dashboard" element={<Dashboard />} />
-            <Route path="/wait" element={<CounselorWaitlist />} />
-            <Route path="/test" element={<LiveKitPage />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/joinUs" element={<WorkWithUsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route
-              path="/setAvailability"
-              element={
-                <MoshaverAvailabilityPage setIsLoggedIn={setIsLoggedIn} />
-              }
-            />
-            {/* <Route path="/mosha" element={<MoshaverReservationPage setIsLoggedIn={setIsLoggedIn} />} /> */}
-          </Routes>
-        </Layout>
-      </div>
+              {/* Public pages */}
+              <Route path="/Dashboard" element={<Dashboard />} />
+              <Route path="/wait" element={<CounselorWaitlist />} />
+              <Route path="/test" element={<LiveKitPage />} />
+              <Route path="/about-us" element={<AboutUs />} />
+              <Route path="/joinUs" element={<WorkWithUsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route
+                path="/setAvailability"
+                element={
+                  <MoshaverAvailabilityPage setIsLoggedIn={setIsLoggedIn} />
+                }
+              />
+              {/* <Route path="/mosha" element={<MoshaverReservationPage setIsLoggedIn={setIsLoggedIn} />} /> */}
+            </Routes>
+          </Layout>
+        </div>
+      </QueryClientProvider>
     </Router>
   );
 };

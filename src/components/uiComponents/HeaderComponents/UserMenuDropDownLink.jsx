@@ -6,13 +6,18 @@ function UserMenuDropDownLink({
   navigateLink,
   type,
   children,
+  handleLogout,
 }) {
   const navigate = useNavigate();
+
   return (
     <button
       onClick={() => {
         navigate(navigateLink);
         setUserMenuOpen(false);
+        /* ------------------ if handleLogout is provided, call it ------------------ */
+        handleLogout && navigate("/login");
+        handleLogout && handleLogout();
       }}
       className={`w-full text-right px-4 py-2 text-sm flex items-center gap-2 ${
         type === "logout"
