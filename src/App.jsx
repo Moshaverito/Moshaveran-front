@@ -31,6 +31,8 @@ import NotificationsPage from "./pages/notifications";
 import LiveKitPage from "./pages/test";
 import WorkWithUsPage from "./pages/workWithUs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
+import { duration } from "@mui/material";
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -90,6 +92,11 @@ const App = () => {
 
   return (
     <Router>
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        toastOptions={{ duration: 3000 }}
+      />
       <QueryClientProvider client={queryClient}>
         <GoftinoSnippet
           goftinoKey={GOFTINO_KEY}
