@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import Login from "./pages/Login";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import Layout from "./components/layout/Layout";
 
@@ -97,7 +98,9 @@ const App = () => {
         reverseOrder={false}
         toastOptions={{ duration: 3000 }}
       />
+
       <QueryClientProvider client={queryClient}>
+        <ReactQueryDevtools initialIsOpen={false} />
         <GoftinoSnippet
           goftinoKey={GOFTINO_KEY}
           onReady={() => window.Goftino.close()}

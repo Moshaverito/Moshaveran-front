@@ -9,13 +9,15 @@ import {
 /* eslint react/prop-types: 0 */
 
 function SessionsHistory({ sessionHistory, refetchSessionHistory }) {
+  const sessions = Array.isArray(sessionHistory) ? sessionHistory : [];
+
   return (
     <section className="mb-8">
       <div className="bg-white/70 backdrop-blur-md rounded-2xl p-6 shadow-lg">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Clock className="w-6 h-6 text-purple-600" />
-            تاریخچه جلسات ({sessionHistory?.length})
+            تاریخچه جلسات ({sessions.length})
           </h2>
           <button
             onClick={refetchSessionHistory}
@@ -27,7 +29,7 @@ function SessionsHistory({ sessionHistory, refetchSessionHistory }) {
         </div>
 
         <div className="space-y-4">
-          {sessionHistory?.map((session) => (
+          {sessions.map((session) => (
             <div key={session.id} className="bg-gray-50 rounded-xl p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -71,7 +73,7 @@ function SessionsHistory({ sessionHistory, refetchSessionHistory }) {
             </div>
           ))}
 
-          {sessionHistory?.length === 0 && (
+          {sessions.length === 0 && (
             <div className="text-center text-gray-500 py-8">
               هیچ سابقه جلسه‌ای وجود ندارد
             </div>

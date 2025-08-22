@@ -1,5 +1,5 @@
-const TOKEN = localStorage.getItem("accessToken") || null;
 export async function fetchCurrentSessions() {
+  const TOKEN = localStorage.getItem("accessToken") || null;
   if (!TOKEN) {
     return new Error("توکن دسترسی یافت نشد");
   }
@@ -28,6 +28,7 @@ export async function fetchCurrentSessions() {
 }
 
 export const fetchSessionHistory = async () => {
+  const TOKEN = localStorage.getItem("accessToken") || null;
   if (!TOKEN) {
     return new Error("توکن دسترسی یافت نشد");
   }
@@ -56,6 +57,7 @@ export const fetchSessionHistory = async () => {
 };
 
 export const fetchMonthlyIncome = async () => {
+  const TOKEN = localStorage.getItem("accessToken") || null;
   if (!TOKEN) {
     return new Error("توکن دسترسی یافت نشد");
   }
@@ -85,6 +87,7 @@ export const fetchMonthlyIncome = async () => {
 };
 
 export const fetchPendingSessions = async () => {
+  const TOKEN = localStorage.getItem("accessToken") || null;
   if (!TOKEN) {
     return new Error("توکن دسترسی یافت نشد");
   }
@@ -113,6 +116,7 @@ export const fetchPendingSessions = async () => {
 };
 
 export async function updatePendingSessionsAPI(sessionId, action) {
+  const TOKEN = localStorage.getItem("accessToken") || null;
   if (!TOKEN) {
     return new Error("توکن دسترسی یافت نشد");
   }
@@ -124,7 +128,7 @@ export async function updatePendingSessionsAPI(sessionId, action) {
     };
 
     const response = await fetch(
-      "https://api.moshaveritoo.ir/api/sessions/sessions/update_session_statusa/",
+      "https://api.moshaveritoo.ir/api/sessions/sessions/update_session_status/",
       {
         method: "POST",
         headers,

@@ -45,7 +45,7 @@ function SessionModal({
                   </div>
                   <button
                     onClick={() => handleCancelSession(session.id)}
-                    className="text-red-500 hover:text-red-700 p-1 bg-inherit"
+                    className="text-red-500 hover:text-red-700 p-1 bg-inherit "
                   >
                     <X className="w-4 h-4" />
                   </button>

@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, MessageCircle, Video, Phone, X } from "lucide-react";
 import NoAccess from "../components/uiComponents/DashBoard/NoAccess";
 import DashBoardLoading from "../components/uiComponents/DashBoard/DashBoardLoading";
 import CurrentSessions from "../components/uiComponents/DashBoard/CurrentSessions";
@@ -33,8 +32,6 @@ const MoshaverDashboard = () => {
     }
   });
 
-  // Data states
-
   const [monthlyIncome, setMonthlyIncome] = useState(0);
   const [availablePayment, setAvailablePayment] = useState(0);
   const [error, setError] = useState(null);
@@ -50,6 +47,18 @@ const MoshaverDashboard = () => {
 
   const { isLoadingPendingSessions, pendingSessions, refetchPendingSessions } =
     useGetPendingSessions();
+
+  const { updatePendingSessions, pendingSessionsUpdating } =
+    useUpdatePendingSessions();
+
+  // Refetch data when token becomes available (e.g., after login)
+  useEffect(() => {
+    if (token) {
+      refetchCurrentSessions && refetchCurrentSessions();
+      refetchSessionHistory && refetchSessionHistory();
+      refetchPendingSessions && refetchPendingSessions();
+    }
+  }, [token]);
 
   // API call functions
 
@@ -122,9 +131,6 @@ const MoshaverDashboard = () => {
   //     alert("خطا در لغو جلسه");
   //   }
   // };
-
-  const { updatePendingSessions, pendingSessionsUpdating } =
-    useUpdatePendingSessions();
 
   // const handlePaymentRequest = async () => {
   //   if (!token) return;
