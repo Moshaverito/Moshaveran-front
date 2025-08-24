@@ -17,7 +17,7 @@ import { useUpdatePendingSessions } from "../hooks/useUpdatePendingSessions";
 import CancelConfirmModal from "../components/uiComponents/DashBoard/CancelConfirmModal";
 import { useCancelSession } from "../hooks/useCancelSession";
 import { useGetMonthlyIncome } from "../hooks/useGetMonthlyIncome";
-import { useGetAvailablePayment } from "../hooks/useGetAvailablePayment,js";
+import { useGetAvailablePayment } from "../hooks/useGetAvailablePayment.js";
 import PaymentModal from "../components/uiComponents/DashBoard/PaymentModal";
 import toast from "react-hot-toast";
 import { useRequestPayments } from "../hooks/useRequestPayments";

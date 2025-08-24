@@ -1,11 +1,178 @@
 /* --------------------------- logout Api Function -------------------------- */
+export async function apiLogIn(formData) {
+  console.log(formData);
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.phone,
+          password: formData.password,
+        }),
+      }
+    );
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "خطا در ارسال کد");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error during login:", error);
+    throw error;
+  }
+}
+
+export async function apiSendOTP(formData) {
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/Mlogin/sendCode/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.phone,
+        }),
+      }
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || "خطا در ارسال کد");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error during OTP send:", error);
+    throw error;
+  }
+}
+export async function apiVerifyOTP(formData) {
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.phone,
+          code: formData.otpCode,
+          mode: "otp",
+        }),
+      }
+    );
+
+    const data = await response.json();
+    console.log(" dataToken:", data);
+
+    if (!response.ok) {
+      throw new Error(data.error || "خطا در ارسال کد");
+    }
+    return data;
+  } catch (error) {
+    console.error("Error during OTP send:", error);
+    throw error;
+  }
+}
+
+export async function apiSendNormalizedPhoneOTP(normalizedPhone) {
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/register/sendCode/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: normalizedPhone,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "خطا در ارسال کد");
+    }
+    return data;
+  } catch (error) {
+    console.error("Error during OTP send:", error);
+    throw error;
+  }
+}
+
+export async function apiVerifyNormalizedPhoneOTP(data) {
+  const { normalizedPhone, verificationCode } = data;
+
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/register/verify/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: normalizedPhone,
+          code: verificationCode,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "کد تایید نامعتبر است");
+    }
+    return data;
+  } catch (error) {
+    console.error("خطا در اتصال به سرور", error);
+    throw error;
+  }
+}
+
+export async function apiRegisterUser(data) {
+  const { normalizedPhone, password } = data;
+  console.log(normalizedPhone, password);
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/register/register/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: normalizedPhone,
+          password: password,
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "خطا در ثبت‌نام");
+    }
+    return data;
+  } catch (error) {
+    console.error("خطا در اتصال به سرور", error);
+    throw error;
+  }
+}
 export async function apiLogOut() {
   try {
     const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) {
-      console.error("No access token found");
-      return;
-    }
+    if (!accessToken) return;
 
     const res = await fetch(
       `https://api.moshaveritoo.ir/api/accounts/logout/`,

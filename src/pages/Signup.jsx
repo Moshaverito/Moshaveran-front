@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Phone,
   Lock,
@@ -8,9 +8,10 @@ import {
   AlertCircle,
   Timer,
   ArrowRight,
-  ArrowLeft,
-  User,
 } from "lucide-react";
+import { useSendNormalizedPhoneOTP } from "../hooks/useSendNormalizedPhoneOTP";
+import { useVerifyNormalizedPhoneOTP } from "../hooks/useVerifyNormalizedPhoneOTP";
+import { useRegisterUser } from "../hooks/useRegisterUser";
 
 const RegistrationPage = () => {
   const [step, setStep] = useState(1);
@@ -21,11 +22,19 @@ const RegistrationPage = () => {
     confirmPassword: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [canResend, setCanResend] = useState(true);
+
+  const { sendNormalizedPhoneOTP, isSendNormalizedPhoneOTP } =
+    useSendNormalizedPhoneOTP();
+
+  const { verifyNormalizedPhoneOTP, isVerifyNormalizedPhoneOTPVerifying } =
+    useVerifyNormalizedPhoneOTP();
+
+  const { registerUserData, isUserRegistering } = useRegisterUser();
 
   // Countdown timer for OTP resend
   useEffect(() => {
@@ -80,120 +89,54 @@ const RegistrationPage = () => {
 
   // API call to send OTP
   const sendOTP = async () => {
-    setLoading(true);
     setErrors({});
-
-    try {
-      const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/register/sendCode/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: normalizedPhone,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
+    const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
+    sendNormalizedPhoneOTP(normalizedPhone, {
+      onSuccess: () => {
         setStep(2);
         setCountdown(120); // 2 minutes
         setCanResend(false);
-      } else {
-        setErrors({ phone: data.error || "خطا در ارسال کد تایید" });
-      }
-    } catch (error) {
-      setErrors({ phone: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   // API call to verify OTP
   const verifyOTP = async () => {
-    setLoading(true);
     setErrors({});
-
-    try {
-      const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/register/verify/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: normalizedPhone,
-            code: formData.verificationCode,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
+    const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
+    const data = {
+      normalizedPhone,
+      verificationCode: formData.verificationCode,
+    };
+    verifyNormalizedPhoneOTP(data, {
+      onSuccess: () => {
         setStep(3);
-      } else {
-        setErrors({ code: data.error || "کد تایید نامعتبر است" });
-      }
-    } catch (error) {
-      setErrors({ code: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   // API call to register user
   const registerUser = async () => {
-    setLoading(true);
     setErrors({});
+    const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
 
-    try {
-      const normalizedPhone = normalizePhoneNumber(formData.phoneNumber);
+    const data = {
+      normalizedPhone,
+      password: formData.password,
+    };
 
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/register/register/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: normalizedPhone,
-            password: formData.password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
+    registerUserData(data, {
+      onSuccess: () => {
         // Store tokens
         localStorage.setItem("accessToken", data.access);
         localStorage.setItem("refreshToken", data.refresh);
-
         setStep(4);
-
         // Redirect to login or dashboard after 2 seconds
         setTimeout(() => {
           window.location.href = "/login";
         }, 2000);
-      } else {
-        setErrors({ general: data.error || "خطا در ثبت‌نام" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   // Handle form submission for each step
@@ -222,7 +165,6 @@ const RegistrationPage = () => {
         setErrors({ code: "کد تایید باید ۶ رقم باشد" });
         return;
       }
-
       verifyOTP();
     } else if (step === 3) {
       // Validate password
@@ -265,6 +207,7 @@ const RegistrationPage = () => {
   // Resend OTP
   const handleResendOTP = () => {
     if (canResend) {
+      handleInputChange("verificationCode", "");
       sendOTP();
     }
   };
@@ -311,10 +254,10 @@ const RegistrationPage = () => {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={isSendNormalizedPhoneOTP}
           className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "در حال ارسال..." : "ارسال کد تایید"}
+          {isSendNormalizedPhoneOTP ? "در حال ارسال..." : "ارسال کد تایید"}
         </button>
       </div>
     </div>
@@ -374,7 +317,11 @@ const RegistrationPage = () => {
 
           <button
             type="button"
-            onClick={() => setStep(1)}
+            onClick={() => {
+              handleInputChange("phoneNumber", "");
+              handleInputChange("verificationCode", "");
+              setStep(1);
+            }}
             className="text-sm text-gray-600 hover:text-gray-700 flex items-center gap-1 bg-white px-3 py-2 rounded-lg transition-all duration-300"
           >
             <ArrowRight className="w-4 h-4" />
@@ -385,10 +332,13 @@ const RegistrationPage = () => {
         <button
           type="button"
           onClick={handleSubmit}
-          disabled={loading || formData.verificationCode.length !== 6}
+          disabled={
+            isVerifyNormalizedPhoneOTPVerifying ||
+            formData.verificationCode.length !== 6
+          }
           className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? "در حال تایید..." : "تایید کد"}
+          {isVerifyNormalizedPhoneOTPVerifying ? "در حال تایید..." : "تایید کد"}
         </button>
       </div>
     </div>
@@ -423,12 +373,13 @@ const RegistrationPage = () => {
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 placeholder="رمز عبور خود را وارد کنید"
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-4 text-gray-800 py-3 pr-4 border bg-inherit border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                className="absolute left-0 text-gray-400 hover:text-gray-600 bg-inherit"
+                style={{ top: "50%", transform: "translate(0%, -50%)" }}
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -542,7 +493,7 @@ const RegistrationPage = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2 ">
               تکرار رمز عبور
             </label>
             <div className="relative">
@@ -553,12 +504,13 @@ const RegistrationPage = () => {
                   handleInputChange("confirmPassword", e.target.value)
                 }
                 placeholder="رمز عبور خود را مجدداً وارد کنید"
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-4 py-3 pr-4 text-gray-800 border bg-inherit border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                className="absolute left-0 text-gray-400 hover:text-gray-600 bg-inherit"
+                style={{ top: "50%", transform: "translate(0%, -50%)" }}
               >
                 {showConfirmPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -595,7 +547,7 @@ const RegistrationPage = () => {
             <button
               type="button"
               onClick={() => setStep(2)}
-              className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 px-6 rounded-lg transition-all duration-300"
+              className="flex-1 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3 px-6 rounded-lg transition-all duration-300 bg-inherit"
             >
               مرحله قبل
             </button>
@@ -604,13 +556,13 @@ const RegistrationPage = () => {
               type="button"
               onClick={handleSubmit}
               disabled={
-                loading ||
+                isUserRegistering ||
                 !passwordValidation.isValid ||
                 formData.password !== formData.confirmPassword
               }
               className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
+              {isUserRegistering ? "در حال ثبت‌نام..." : "ثبت‌نام"}
             </button>
           </div>
         </div>

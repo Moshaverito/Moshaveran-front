@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ApiGetNotifications } from "../services/apiNotifications";
+
 import toast from "react-hot-toast";
 import { fetchAvailablePayment } from "../services/apiSessions";
 

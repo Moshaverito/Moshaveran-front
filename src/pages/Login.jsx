@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Phone, Lock, Eye, EyeOff, ArrowRight, LogIn } from "lucide-react";
 import { Translation, useTranslation } from "react-i18next";
-import { Notify } from "notiflix";
+
+import { useRegularLogin } from "../hooks/useRegularLogin";
+import { useSendOTP } from "../hooks/useSendOTP";
+import { useOTPVerification } from "../hooks/useOTPVerification";
 
 const MoshaveritoLogin = ({ setIsLoggedIn }) => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const [loginType, setLoginType] = useState("regular"); // 'regular' or 'otp'
   const [showPassword, setShowPassword] = useState(false);
@@ -15,10 +17,13 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
     otpCode: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otpTimer, setOtpTimer] = useState(0);
   const [showOtpInput, setShowOtpInput] = useState(false);
+
+  const { regularLogin, isLoggingIn } = useRegularLogin();
+  const { sendOTP, isSendingOTP } = useSendOTP();
+  const { otpVerification, isOtpVerifying } = useOTPVerification();
 
   // Timer for OTP resend
   useEffect(() => {
@@ -30,23 +35,6 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
     }
     return () => clearInterval(interval);
   }, [otpTimer]);
-
-  // Handle login success
-  const handleLoginSuccess = (data) => {
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("accessToken", data.data.access);
-    localStorage.setItem("refreshToken", data.data.refresh);
-    // localStorage.setItem('userRole', data.role);
-    // localStorage.setItem('streak', data.streak);
-
-    // Update the parent App.jsx state
-    setIsLoggedIn(true);
-
-    // Dispatch the custom event
-    window.dispatchEvent(new Event("loginStateChanged"));
-    Notify.success("ورود موفقیت أمیز بود. خوش آمدید");
-    navigate("/dashboard");
-  };
 
   // Iranian phone number validation
   const validateIranianPhone = (phone) => {
@@ -107,117 +95,53 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle regular login
-  const handleRegularLogin = async (e) => {
+  // Handle regular login and success login
+  function handleRegularLogin(e) {
     e.preventDefault();
     if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: formData.phone,
-            password: formData.password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-      console.log(" dataToken:", data);
-
-      if (response.ok) {
-        // Login successful - use the handleLoginSuccess function
-        handleLoginSuccess(data);
-      } else {
-        setErrors({ general: data.message || "خطا در ورود" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
-  };
+    regularLogin(formData, {
+      onSuccess: (data) => handleSuccessLogin(data),
+    });
+  }
 
   // Handle OTP request
   const handleOtpRequest = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/Mlogin/sendCode/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: formData.phone,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
+    sendOTP(formData, {
+      onSuccess: () => {
         setOtpSent(true);
         setShowOtpInput(true);
         setOtpTimer(120); // 2 minutes
-        Notify.success(t("کد ارسال شد"));
-      } else {
-        setErrors({ general: data.message || "خطا در ارسال کد تأیید" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   // Handle OTP verification
   const handleOtpVerification = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            username: formData.phone,
-            code: formData.otpCode,
-            mode: "otp",
-          }),
-        }
-      );
-
-      const data = await response.json();
-      console.log(" dataToken:", data);
-
-      if (response.ok) {
-        // Login successful - use the handleLoginSuccess function
-        handleLoginSuccess(data);
-      } else {
-        setErrors({ general: data.message || "کد تأیید نادرست است" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
+    otpVerification(formData, {
+      onSuccess: (data) => handleSuccessLogin(data),
+    });
   };
+
+  // handles the successful login process
+  function handleSuccessLogin(data) {
+    localStorage.setItem("isLoggedIn", "true");
+    localStorage.setItem("accessToken", data.data.access);
+    localStorage.setItem("refreshToken", data.data.refresh);
+    // localStorage.setItem('userRole', data.role);
+    // localStorage.setItem('streak', data.streak);
+
+    // Update the parent App.jsx state
+    setIsLoggedIn(true);
+
+    // Dispatch the custom event
+    window.dispatchEvent(new Event("loginStateChanged"));
+
+    navigate("/dashboard");
+  }
 
   // Format timer display
   const formatTimer = (seconds) => {
@@ -298,12 +222,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
             <div className="space-y-6">
               {/* Phone Input */}
               <div>
-                <label className="block text-gray-700 font-bold mb-2">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="phone"
+                >
                   شماره موبایل
                 </label>
                 <div className="relative">
                   <input
                     type="tel"
+                    id="phone"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
@@ -311,7 +239,7 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                     className="w-full pr-12 pl-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all duration-300 bg-gray-50 placeholder:text-gray-400 text-gray-900"
                   />
                   <div
-                    className="absolute right-3 text-gray-400"
+                    className="absolute right-3 text-gray-400 w-6 h-6"
                     style={{
                       top: "50%",
                       left: "0",
@@ -328,12 +256,16 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
 
               {/* Password Input */}
               <div>
-                <label className="block text-gray-700 font-bold mb-2">
+                <label
+                  className="block text-gray-700 font-bold mb-2"
+                  htmlFor="password"
+                >
                   رمز عبور
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
+                    id="password"
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
@@ -375,10 +307,10 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
               <button
                 type="button"
                 onClick={handleRegularLogin}
-                disabled={loading}
+                disabled={isLoggingIn}
                 className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {loading ? (
+                {isLoggingIn ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
@@ -454,10 +386,10 @@ const MoshaveritoLogin = ({ setIsLoggedIn }) => {
                 onClick={
                   showOtpInput ? handleOtpVerification : handleOtpRequest
                 }
-                disabled={loading}
+                disabled={isSendingOTP || isOtpVerifying}
                 className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-bold py-3 sm:py-4 px-6 sm:px-8 rounded-full transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {loading ? (
+                {isSendingOTP || isOtpVerifying ? (
                   <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 ) : showOtpInput ? (
                   <>
