@@ -26,7 +26,10 @@ function EarningSection({
             </button>
           </div>
           <div className="text-3xl font-bold text-green-600 mb-2">
-            {monthlyIncome?.toLocaleString("fa-IR")} تومان
+            {typeof monthlyIncome === "number"
+              ? monthlyIncome.toLocaleString("fa-IR")
+              : 0}{" "}
+            تومان
           </div>
           <div className="text-sm text-gray-600">درآمد ماه جاری</div>
         </div>
@@ -54,7 +57,7 @@ function EarningSection({
             </div>
           </div>
           <div className="text-3xl font-bold text-blue-600 mb-2">
-            {availablePayment.toLocaleString("fa-IR")} تومان
+            {availablePayment?.toLocaleString("fa-IR")} تومان
           </div>
           <div className="text-sm text-gray-600">موجودی قابل برداشت</div>
         </div>

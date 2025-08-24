@@ -26,7 +26,7 @@ import TherapistHomePage from "./pages/HomePage";
 import TermsAndConditionsPage from "./pages/TermsAndConditions";
 import ContactUsPage from "./pages/ContacUs";
 import MoshaverProfile from "./pages/UserProfile";
-import PersianHadithSpiritualPage from "./pages/hh";
+
 import PlansPage from "./pages/plans";
 import NotificationsPage from "./pages/notifications";
 import LiveKitPage from "./pages/test";

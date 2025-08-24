@@ -15,7 +15,6 @@ function CurrentSessions({
   setShowSessionModal,
   handleCancelSession,
 }) {
-  console.log(currentSessions);
   return (
     <section className="mb-8">
       <div className="bg-gray-100 backdrop-blur-md rounded-2xl p-6 shadow-lg">

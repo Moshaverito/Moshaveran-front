@@ -2,16 +2,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { updatePendingSessionsAPI } from "../services/apiSessions";
 
-export function useUpdatePendingSessions() {
+export function useCancelSession() {
   const queryClient = useQueryClient();
-  const { mutate: updatePendingSessions, isPending: pendingSessionsUpdating } =
+  const { mutate: cancelSession, isLoading: cancelSessionLoading } =
     useMutation({
-      mutationFn: ({ sessionId, action }) => {
-        return updatePendingSessionsAPI(sessionId, action);
+      mutationFn: ({ sessionId }) => {
+        return updatePendingSessionsAPI({ sessionId });
       },
       onSuccess: () => {
         toast.success("عملیات با موفقیت انجام شد");
-        queryClient.invalidateQueries({ queryKey: ["pendingSessions"] });
+        queryClient.invalidateQueries({ queryKey: ["currentSessions"] });
       },
       onError: (error) => {
         console.log("Error updating pending session:", error);
@@ -19,5 +19,5 @@ export function useUpdatePendingSessions() {
       },
     });
 
-  return { updatePendingSessions, pendingSessionsUpdating };
+  return { cancelSession, cancelSessionLoading };
 }

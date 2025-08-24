@@ -1,0 +1,25 @@
+import { useQuery } from "@tanstack/react-query";
+import { ApiGetNotifications } from "../services/apiNotifications";
+import toast from "react-hot-toast";
+import { fetchAvailablePayment } from "../services/apiSessions";
+
+export function useGetAvailablePayment() {
+  /* ---------------- using react query to fetch notifications ---------------- */
+  const {
+    isLoading: isLoadingAvailablePayment,
+    data: availablePayments,
+    refetch: refetchAvailablePayment,
+  } = useQuery({
+    queryKey: ["availablePayment"],
+    queryFn: fetchAvailablePayment,
+    onError: () => {
+      toast.error("خطا در بارگذاری اعلان‌ها. لطفاً دوباره تلاش کنید.");
+    },
+  });
+
+  return {
+    isLoadingAvailablePayment,
+    availablePayments,
+    refetchAvailablePayment,
+  };
+}

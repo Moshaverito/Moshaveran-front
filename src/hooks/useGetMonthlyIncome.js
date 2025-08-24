@@ -7,7 +7,7 @@ export function useGetMonthlyIncome() {
   /* ---------------- using react query to fetch notifications ---------------- */
   const {
     isLoading: isLoadingMonthlyInCome,
-    data: monthlyInCome,
+    data: monthlyInComeData,
     refetch: refetchMonthlyInCome,
   } = useQuery({
     queryKey: ["monthlyInCome"],
@@ -17,9 +17,10 @@ export function useGetMonthlyIncome() {
     },
   });
 
+  console.log(monthlyInComeData);
   return {
     isLoadingMonthlyInCome,
-    monthlyInCome,
+    monthlyInComeData,
     refetchMonthlyInCome,
   };
 }
