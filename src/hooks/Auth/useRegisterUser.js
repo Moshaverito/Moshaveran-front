@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { apiRegisterUser } from "../services/apiAuth";
+import { apiRegisterUser } from "../../services/apiAuth";
 
 /* ------------- using React Query to handle the Marking as read process. ------------ */
 export function useRegisterUser() {

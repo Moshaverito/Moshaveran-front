@@ -37,7 +37,7 @@ export async function apiMarkAsRead({ notifId }) {
       return;
     }
 
-    const res = await fetch(`${API_URL}/seenMsg`, {
+    const res = await fetch(`${API_URL}/seenMsg/`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

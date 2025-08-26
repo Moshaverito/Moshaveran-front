@@ -1,7 +1,7 @@
 /* eslint react/prop-types: 0 */
 
 import { Bell, CheckCircle, Loader2 } from "lucide-react";
-import { useMarkAsRead } from "../../../hooks/useMarkAsRead";
+import { useMarkAsRead } from "../../../hooks/Notification/useMarkAsRead";
 
 function NotificationCard({ notification }) {
   const { markAsRead, isLoading } = useMarkAsRead();

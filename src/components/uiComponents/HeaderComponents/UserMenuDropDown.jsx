@@ -1,7 +1,6 @@
 import { LogOut, Settings, User } from "lucide-react";
 import UserMenuDropDownLink from "./UserMenuDropDownLink";
-import { useLogOut } from "../../../hooks/useLogOut";
-
+import { useLogOut } from "../../../hooks/Auth/useLogOut";
 /* eslint react/prop-types: 0 */
 
 function UserMenuDropDown({ setUserMenuOpen }) {

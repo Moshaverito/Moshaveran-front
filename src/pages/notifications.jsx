@@ -3,7 +3,7 @@ import EmptyNotifications from "../components/uiComponents/NotificationsComponen
 import NotificationsSummary from "../components/uiComponents/NotificationsComponents/NotificationsSummary";
 import NotificationsLoader from "../components/uiComponents/NotificationsComponents/NotificationsLoader";
 import NotificationCard from "../components/uiComponents/NotificationsComponents/NotificationCard";
-import { useGetNotifications } from "../hooks/useGetNotifications";
+import { useGetNotifications } from "../hooks/Notification/useGetNotifications";
 
 const NotificationsPage = () => {
   const { notifications, isLoading, refetchNotifications } =

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { updatePendingSessionsAPI } from "../services/apiSessions";
+import { updatePendingSessionsAPI } from "../../services/apiSessions";
 
 export function useCancelSession() {
   const queryClient = useQueryClient();

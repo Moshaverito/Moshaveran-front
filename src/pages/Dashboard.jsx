@@ -7,20 +7,20 @@ import EarningSection from "../components/uiComponents/DashBoard/EarningSection"
 import SessionsHistory from "../components/uiComponents/DashBoard/SessionsHistory";
 import ComingSoon from "../components/uiComponents/DashBoard/ComingSoon";
 import DashBoardError from "../components/uiComponents/DashBoard/DashBoardError";
-import { useGetCurrentSessions } from "../hooks/useGetCurrentSessions";
 import DashBoardHeader from "../components/uiComponents/DashBoard/DashBoardHeader";
-import { useGetSessionHistory } from "../hooks/useGetSessionHistory";
 
 import SessionModal from "../components/uiComponents/DashBoard/SessionModal";
-import { useGetPendingSessions } from "../hooks/useGetPendingSessions";
-import { useUpdatePendingSessions } from "../hooks/useUpdatePendingSessions";
 import CancelConfirmModal from "../components/uiComponents/DashBoard/CancelConfirmModal";
-import { useCancelSession } from "../hooks/useCancelSession";
-import { useGetMonthlyIncome } from "../hooks/useGetMonthlyIncome";
-import { useGetAvailablePayment } from "../hooks/useGetAvailablePayment.js";
 import PaymentModal from "../components/uiComponents/DashBoard/PaymentModal";
 import toast from "react-hot-toast";
-import { useRequestPayments } from "../hooks/useRequestPayments";
+import { useGetCurrentSessions } from "../hooks/Sessions/useGetCurrentSessions.js";
+import { useGetSessionHistory } from "../hooks/Sessions/useGetSessionHistory.js";
+import { useGetMonthlyIncome } from "../hooks/Sessions/useGetMonthlyIncome.js";
+import { useGetPendingSessions } from "../hooks/Sessions/useGetPendingSessions.js";
+import { useUpdatePendingSessions } from "../hooks/Sessions/useUpdatePendingSessions.js";
+import { useCancelSession } from "../hooks/Sessions/useCancelSession.js";
+import { useGetAvailablePayment } from "../hooks/Sessions/useGetAvailablePayment.js";
+import { useRequestPayments } from "../hooks/Sessions/useRequestPayments.js";
 
 const MoshaverDashboard = () => {
   const [showSessionModal, setShowSessionModal] = useState(false);

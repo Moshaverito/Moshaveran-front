@@ -64,6 +64,7 @@ const MoshaverProfile = () => {
   }, []);
 
   const fetchUserInfo = async () => {
+    const token = localStorage.getItem("accessToken");
     try {
       setLoading((prev) => ({ ...prev, userInfo: true }));
 
@@ -73,6 +74,7 @@ const MoshaverProfile = () => {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
             // Add auth headers if needed
           },
         }
@@ -83,6 +85,7 @@ const MoshaverProfile = () => {
       }
 
       const data = await response.json();
+      console.log(data);
       setUserLevel(data.level || 1);
 
       // If user data exists, populate the form
@@ -94,7 +97,7 @@ const MoshaverProfile = () => {
           birthdateDisplay: data.profile.birthdate
             ? georgianToJalali(data.profile.birthdate)
             : "",
-          imageUrl: data.profile.image_url || "",
+          imageUrl: data.image_url,
           videoUrl: data.profile.video_url || "",
           audioUrl: data.profile.audio_url || "",
           creditCardNumber: data.profile.credit_card_number || "",
@@ -186,13 +189,22 @@ const MoshaverProfile = () => {
       const formData = new FormData();
       formData.append("image", file);
 
+      const token = localStorage.getItem("accessToken");
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
       const response = await fetch(
         "https://api.moshaveritoo.ir/api/accounts/Image/",
         {
           method: "POST",
           body: formData,
+          headers,
         }
       );
+
+      console.log(response.json());
 
       if (!response.ok) {
         throw new Error("خطا در آپلود تصویر");
@@ -863,10 +875,7 @@ const MoshaverProfile = () => {
 
         {/* Education Section - Only for Level 2 */}
         {userLevel >= 2 && (
-          <div
-            clab
-            hovssName="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6"
-          >
+          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
-import { fetchMonthlyIncome } from "../services/apiSessions";
+import { fetchMonthlyIncome } from "../../services/apiSessions";
 
 export function useGetMonthlyIncome() {
   /* ---------------- using react query to fetch notifications ---------------- */

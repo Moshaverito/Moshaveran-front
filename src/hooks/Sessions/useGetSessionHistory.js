@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
-import { fetchSessionHistory } from "../services/apiSessions";
+import { fetchSessionHistory } from "../../services/apiSessions";
 
 export function useGetSessionHistory() {
   /* ---------------- using react query to fetch notifications ---------------- */

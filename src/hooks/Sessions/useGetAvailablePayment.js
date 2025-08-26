@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
-import { fetchAvailablePayment } from "../services/apiSessions";
+import { fetchAvailablePayment } from "../../services/apiSessions";
 
 export function useGetAvailablePayment() {
   /* ---------------- using react query to fetch notifications ---------------- */

@@ -1,25 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-
+import { ApiGetNotifications } from "../../services/apiNotifications";
 import toast from "react-hot-toast";
-import { fetchPendingSessions } from "../services/apiSessions";
 
-export function useGetPendingSessions() {
+export function useGetNotifications() {
   /* ---------------- using react query to fetch notifications ---------------- */
   const {
-    isLoading: isLoadingPendingSessions,
-    data: pendingSessions,
-    refetch: refetchPendingSessions,
+    isLoading,
+    data: notifications,
+    refetch: refetchNotifications,
   } = useQuery({
-    queryKey: ["pendingSessions"],
-    queryFn: fetchPendingSessions,
+    queryKey: ["notifications"],
+    queryFn: ApiGetNotifications,
     onError: () => {
       toast.error("خطا در بارگذاری اعلان‌ها. لطفاً دوباره تلاش کنید.");
     },
   });
 
   return {
-    isLoadingPendingSessions,
-    pendingSessions,
-    refetchPendingSessions,
+    isLoading,
+    notifications,
+    refetchNotifications,
   };
 }

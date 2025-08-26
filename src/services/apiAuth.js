@@ -1,6 +1,5 @@
 /* --------------------------- logout Api Function -------------------------- */
 export async function apiLogIn(formData) {
-  console.log(formData);
   try {
     const response = await fetch(
       "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
@@ -71,7 +70,6 @@ export async function apiVerifyOTP(formData) {
     );
 
     const data = await response.json();
-    console.log(" dataToken:", data);
 
     if (!response.ok) {
       throw new Error(data.error || "خطا در ارسال کد");
@@ -142,7 +140,6 @@ export async function apiVerifyNormalizedPhoneOTP(data) {
 
 export async function apiRegisterUser(data) {
   const { normalizedPhone, password } = data;
-  console.log(normalizedPhone, password);
   try {
     const response = await fetch(
       "https://api.moshaveritoo.ir/api/accounts/register/register/",

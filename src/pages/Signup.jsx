@@ -9,9 +9,9 @@ import {
   Timer,
   ArrowRight,
 } from "lucide-react";
-import { useSendNormalizedPhoneOTP } from "../hooks/useSendNormalizedPhoneOTP";
-import { useVerifyNormalizedPhoneOTP } from "../hooks/useVerifyNormalizedPhoneOTP";
-import { useRegisterUser } from "../hooks/useRegisterUser";
+import { useSendNormalizedPhoneOTP } from "../hooks/Auth/useSendNormalizedPhoneOTP";
+import { useVerifyNormalizedPhoneOTP } from "../hooks/Auth/useVerifyNormalizedPhoneOTP";
+import { useRegisterUser } from "../hooks/Auth/useRegisterUser";
 
 const RegistrationPage = () => {
   const [step, setStep] = useState(1);

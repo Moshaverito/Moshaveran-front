@@ -1,6 +1,6 @@
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useGetNotifications } from "../../../hooks/useGetNotifications";
+import { useGetNotifications } from "../../../hooks/Notification/useGetNotifications";
 
 function NotificationButton() {
   const navigate = useNavigate();

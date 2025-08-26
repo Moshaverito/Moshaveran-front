@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { apiLogOut } from "../services/apiAuth";
+import { apiLogOut } from "../../services/apiAuth";
 
 export function useLogOut() {
   /* ------------- using React Query to handle the logout process. ------------ */

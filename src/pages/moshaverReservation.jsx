@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   Clock,
@@ -8,19 +8,23 @@ import {
   AlertCircle,
   Loader,
   User,
-  Settings,
   Lock,
   Eye,
 } from "lucide-react";
+import { useGetReservationData } from "../hooks/Reservation/useGetReservationData";
+import { useGetReservedSlots } from "../hooks/Reservation/useGetReservedSlots";
 
 const MoshaverAvailabilityPage = () => {
   const [selectedSlots, setSelectedSlots] = useState({});
-  const [existingSlots, setExistingSlots] = useState([]);
-  const [reservedSlots, setReservedSlots] = useState([]);
+  // const [existingSlots, setExistingSlots] = useState([]);
+  // const [reservedSlots, setReservedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+
+  const { isReservationDataLoading, reservationData } = useGetReservationData();
+  const { isReservedSlotsLoading, reservedSlotsData } = useGetReservedSlots();
 
   // Persian calendar data (0 = Saturday, 1 = Sunday, ..., 6 = Friday)
   const persianDays = [
@@ -102,7 +106,7 @@ const MoshaverAvailabilityPage = () => {
 
   // Check if a slot is reserved
   const isSlotReserved = (dayOfWeek, startTime, endTime) => {
-    return reservedSlots.some(
+    return reservedSlotsData?.some(
       (slot) =>
         slot.day_of_week === dayOfWeek &&
         slot.start_time === `${startTime}:00` &&
@@ -113,7 +117,7 @@ const MoshaverAvailabilityPage = () => {
 
   // Check if a slot is available (from existing slots)
   const isSlotAvailable = (dayOfWeek, startTime, endTime) => {
-    return existingSlots.some(
+    return reservationData?.some(
       (slot) =>
         slot.day_of_week === dayOfWeek &&
         slot.start_time === `${startTime}:00` &&
@@ -124,74 +128,19 @@ const MoshaverAvailabilityPage = () => {
 
   // Load data from APIs
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-          setError("لطفاً ابتدا وارد حساب کاربری خود شوید");
-          setLoading(false);
-          return;
-        }
-
-        // Load existing available slots
-        const slotsResponse = await fetch(
-          "https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!slotsResponse.ok) {
-          throw new Error(`HTTP error! status: ${slotsResponse.status}`);
-        }
-
-        const slotsData = await slotsResponse.json();
-        setExistingSlots(slotsData);
-
-        // Load reserved slots
-        const reservedResponse = await fetch(
-          "https://api.moshaveritoo.ir/api/sessions/availabilities/reserved/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (reservedResponse.ok) {
-          const reservedData = await reservedResponse.json();
-          setReservedSlots(reservedData);
-        }
-
-        // Convert existing available slots to selectedSlots format
-        const selected = {};
-        slotsData.forEach((slot) => {
-          if (slot.is_active) {
-            const key = `${slot.day_of_week}-${slot.start_time.substring(
-              0,
-              5
-            )}-${slot.end_time.substring(0, 5)}`;
-            selected[key] = true;
-          }
-        });
-        setSelectedSlots(selected);
-      } catch (err) {
-        setError("خطا در بارگذاری اطلاعات: " + err.message);
-        console.error("Error loading data:", err);
-      } finally {
-        setLoading(false);
+    setError(null);
+    const selected = {};
+    reservationData?.forEach((slot) => {
+      if (slot.is_active) {
+        const key = `${slot.day_of_week}-${slot.start_time.substring(
+          0,
+          5
+        )}-${slot.end_time.substring(0, 5)}`;
+        selected[key] = true;
       }
-    };
-
-    loadData();
-  }, []);
+    });
+    setSelectedSlots(selected);
+  }, [reservationData]);
 
   // Toggle slot selection
   const toggleSlot = (dayIndex, slot) => {
@@ -238,91 +187,91 @@ const MoshaverAvailabilityPage = () => {
     }
   };
   // Save availability slots using the weekly_time endpoint
-  const saveAvailability = async () => {
-    setSaving(true);
-    setError(null);
+  // const saveAvailability = async () => {
+  //   setSaving(true);
+  //   setError(null);
 
-    try {
-      const token = localStorage.getItem("accessToken");
-      if (!token) {
-        setError("لطفاً ابتدا وارد حساب کاربری خود شوید");
-        setSaving(false);
-        return;
-      }
+  //   try {
+  //     const token = localStorage.getItem("accessToken");
+  //     if (!token) {
+  //       setError("لطفاً ابتدا وارد حساب کاربری خود شوید");
+  //       setSaving(false);
+  //       return;
+  //     }
 
-      // Organize selected slots by day
-      const weekData = {};
+  //     // Organize selected slots by day
+  //     const weekData = {};
 
-      Object.entries(selectedSlots).forEach(([key, isSelected]) => {
-        if (isSelected) {
-          const [dayOfWeek, startTime, endTime] = key.split("-");
-          const dayIndex = parseInt(dayOfWeek);
+  //     Object.entries(selectedSlots).forEach(([key, isSelected]) => {
+  //       if (isSelected) {
+  //         const [dayOfWeek, startTime, endTime] = key.split("-");
+  //         const dayIndex = parseInt(dayOfWeek);
 
-          if (!weekData[dayIndex]) {
-            weekData[dayIndex] = [];
-          }
+  //         if (!weekData[dayIndex]) {
+  //           weekData[dayIndex] = [];
+  //         }
 
-          // Use HH:MM format as required by API
-          weekData[dayIndex].push({
-            start: startTime,
-            end: endTime,
-            is_active: true,
-          });
-        }
-      });
+  //         // Use HH:MM format as required by API
+  //         weekData[dayIndex].push({
+  //           start: startTime,
+  //           end: endTime,
+  //           is_active: true,
+  //         });
+  //       }
+  //     });
 
-      // Prepare the request body according to your API format
-      const requestBody = {
-        replace: true,
-        week: weekData,
-      };
+  //     // Prepare the request body according to your API format
+  //     const requestBody = {
+  //       replace: true,
+  //       week: weekData,
+  //     };
 
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/sessions/availabilities/weekly_time/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+  //     const response = await fetch(
+  //       "https://api.moshaveritoo.ir/api/sessions/availabilities/weekly_time/",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         body: JSON.stringify(requestBody),
+  //       }
+  //     );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
-        );
-      }
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(
+  //         errorData.message || `HTTP error! status: ${response.status}`
+  //       );
+  //     }
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+  //     setSuccess(true);
+  //     setTimeout(() => setSuccess(false), 3000);
 
-      // Reload data to reflect changes
-      const slotsResponse = await fetch(
-        "https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  //     // Reload data to reflect changes
+  //     const slotsResponse = await fetch(
+  //       "https://api.moshaveritoo.ir/api/sessions/availabilities/my_slots/",
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       }
+  //     );
 
-      if (slotsResponse.ok) {
-        const updatedSlots = await slotsResponse.json();
-        setExistingSlots(updatedSlots);
-      }
-    } catch (err) {
-      setError("خطا در ذخیره زمان‌های دسترسی: " + err.message);
-      console.error("Error saving slots:", err);
-    } finally {
-      setSaving(false);
-    }
-  };
+  //     if (slotsResponse.ok) {
+  //       const updatedSlots = await slotsResponse.json();
+  //       setExistingSlots(updatedSlots);
+  //     }
+  //   } catch (err) {
+  //     setError("خطا در ذخیره زمان‌های دسترسی: " + err.message);
+  //     console.error("Error saving slots:", err);
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
 
   // Get selected slots count
   const getSelectedSlotsCount = () => {
@@ -338,7 +287,7 @@ const MoshaverAvailabilityPage = () => {
     };
   };
 
-  if (loading) {
+  if (isReservationDataLoading || isReservedSlotsLoading) {
     return (
       <div
         className="min-h-screen bg-gray-50 flex items-center justify-center"
@@ -470,7 +419,7 @@ const MoshaverAvailabilityPage = () => {
 
               {/* Save Button */}
               <button
-                onClick={saveAvailability}
+                // onClick={saveAvailability}
                 disabled={saving || getSelectedSlotsCount() === 0}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
               >

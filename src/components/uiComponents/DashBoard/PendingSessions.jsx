@@ -57,7 +57,7 @@ function PendingSessions({ pendingSessions, updatePendingSessions }) {
                       onClick={() =>
                         updatePendingSessions({
                           sessionId: session?.id,
-                          action: `ignore`,
+                          action: `ignored`,
                         })
                       }
                       className="bg-gray-500 text-white p-2 rounded-full hover:bg-gray-600 transition-all"

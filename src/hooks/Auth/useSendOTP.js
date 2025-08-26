@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { apiSendOTP } from "../services/apiAuth";
+import { apiSendOTP } from "../../services/apiAuth";
 
 /* ------------- using React Query to handle the Marking as read process. ------------ */
 export function useSendOTP() {

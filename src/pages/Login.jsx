@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Phone, Lock, Eye, EyeOff, ArrowRight, LogIn } from "lucide-react";
+import { Phone, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Translation, useTranslation } from "react-i18next";
-
-import { useRegularLogin } from "../hooks/useRegularLogin";
-import { useSendOTP } from "../hooks/useSendOTP";
-import { useOTPVerification } from "../hooks/useOTPVerification";
+import { useRegularLogin } from "../hooks/Auth/useRegularLogin";
+import { useSendOTP } from "../hooks/Auth/useSendOTP";
+import { useOTPVerification } from "../hooks/Auth/useOTPVerification";
 
 const MoshaveritoLogin = ({ setIsLoggedIn }) => {
   const navigate = useNavigate();
