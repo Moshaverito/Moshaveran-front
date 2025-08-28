@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ArrowRight,
-  Crown,
   Star,
   Zap,
   Check,
   Gift,
   AlertCircle,
   CheckCircle,
-  Users,
-  Shield,
   Clock,
   Award,
 } from "lucide-react";
@@ -283,8 +280,8 @@ const PlansPage = () => {
                           plan.id === 1001
                             ? "bg-gradient-to-r from-blue-500 to-purple-500"
                             : plan.id === 1002
-                            ? "bg-gradient-to-r from-teal-500 to-blue-500"
-                            : "bg-gradient-to-r from-orange-500 to-red-500"
+                              ? "bg-gradient-to-r from-teal-500 to-blue-500"
+                              : "bg-gradient-to-r from-orange-500 to-red-500"
                         }`}
                       >
                         {plan.id === 1001 && (
@@ -324,8 +321,8 @@ const PlansPage = () => {
                         {plan.id === 1001
                           ? "ماهانه"
                           : plan.id === 1002
-                          ? "هر 3 ماه"
-                          : "سالانه"}
+                            ? "هر 3 ماه"
+                            : "سالانه"}
                       </p>
                     </div>
 

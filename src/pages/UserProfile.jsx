@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   ArrowRight,
   Camera,
@@ -21,6 +21,10 @@ import {
   CreditCard,
   Clock,
 } from "lucide-react";
+import { useGetUserInfo } from "../hooks/userProfile/useGetUserInfo";
+import { useUploadImage } from "../hooks/userProfile/useUploadImage";
+import { useUploadVideo } from "../hooks/userProfile/useUploadVideo";
+import { useUploadAudio } from "../hooks/userProfile/useUploadAudio";
 
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
@@ -36,9 +40,6 @@ const MoshaverProfile = () => {
   });
 
   const [loading, setLoading] = useState({
-    image: false,
-    video: false,
-    audio: false,
     profile: false,
     userInfo: true,
   });
@@ -58,58 +59,33 @@ const MoshaverProfile = () => {
   const videoInputRef = useRef(null);
   const audioInputRef = useRef(null);
 
+  // Get user info
+  const { userInfoData, isUserInfoDataLoading } = useGetUserInfo();
+
+  const { uploadImage, isUploadingImage } = useUploadImage();
+
+  const { uploadVideo, isUploadingVideo } = useUploadVideo();
+
+  const { uploadAudio, isUploadingAudio } = useUploadAudio();
+
   // Fetch user info on component mount
   useEffect(() => {
-    fetchUserInfo();
-  }, []);
-
-  const fetchUserInfo = async () => {
-    const token = localStorage.getItem("accessToken");
-    try {
-      setLoading((prev) => ({ ...prev, userInfo: true }));
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/moshavers/user_info/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
-            // Add auth headers if needed
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("خطا در دریافت اطلاعات کاربر");
-      }
-
-      const data = await response.json();
-      console.log(data);
-      setUserLevel(data.level || 1);
-
-      // If user data exists, populate the form
-      if (data.profile) {
-        setProfile((prev) => ({
-          ...prev,
-          bio: data.profile.bio || "",
-          birthdate: data.profile.birthdate || "",
-          birthdateDisplay: data.profile.birthdate
-            ? georgianToJalali(data.profile.birthdate)
-            : "",
-          imageUrl: data.image_url,
-          videoUrl: data.profile.video_url || "",
-          audioUrl: data.profile.audio_url || "",
-          creditCardNumber: data.profile.credit_card_number || "",
-          degrees: data.profile.degrees || [],
-        }));
-      }
-    } catch (error) {
-      setErrors((prev) => ({ ...prev, userInfo: error.message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, userInfo: false }));
+    if (userInfoData) {
+      setProfile((prev) => ({
+        ...prev,
+        bio: userInfoData.bio || "",
+        birthdate: userInfoData.birthdate || "",
+        birthdateDisplay: userInfoData.birthdate
+          ? georgianToJalali(userInfoData.birthdate)
+          : "",
+        imageUrl: userInfoData.image_url,
+        videoUrl: userInfoData.video_url || "",
+        audioUrl: userInfoData.audio_url || "",
+        creditCardNumber: userInfoData.credit_card_number || "",
+        degrees: userInfoData.degrees || [],
+      }));
     }
-  };
+  }, [userInfoData]);
 
   // Jalali to Georgian date conversion
   const jalaliToGeorgian = (jalaliDate) => {
@@ -182,41 +158,16 @@ const MoshaverProfile = () => {
       return;
     }
 
-    try {
-      setLoading((prev) => ({ ...prev, image: true }));
-      setErrors((prev) => ({ ...prev, image: "" }));
+    setLoading((prev) => ({ ...prev, image: true }));
+    setErrors((prev) => ({ ...prev, image: "" }));
 
-      const formData = new FormData();
-      formData.append("image", file);
-
-      const token = localStorage.getItem("accessToken");
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-      };
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/Image/",
-        {
-          method: "POST",
-          body: formData,
-          headers,
-        }
-      );
-
-      console.log(response.json());
-
-      if (!response.ok) {
-        throw new Error("خطا در آپلود تصویر");
-      }
-
-      const data = await response.json();
-      setProfile((prev) => ({ ...prev, imageUrl: data.url }));
-    } catch (error) {
-      setErrors((prev) => ({ ...prev, image: error.message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, image: false }));
-    }
+    const formData = new FormData();
+    formData.append("image", file);
+    uploadImage(formData, {
+      onSuccess: (data) => {
+        setProfile((prev) => ({ ...prev, imageUrl: data?.image }));
+      },
+    });
   };
 
   const handleVideoUpload = async (event) => {
@@ -238,34 +189,19 @@ const MoshaverProfile = () => {
       }));
       return;
     }
-
     try {
       await validateMediaDuration(file, "video");
-
-      setLoading((prev) => ({ ...prev, video: true }));
       setErrors((prev) => ({ ...prev, video: "" }));
-
       const formData = new FormData();
       formData.append("video", file);
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/videos/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("خطا در آپلود ویدیو");
-      }
-
-      const data = await response.json();
-      setProfile((prev) => ({ ...prev, videoUrl: data.url }));
+      uploadVideo(formData, {
+        onSuccess: (data) => {
+          setProfile((prev) => ({ ...prev, videoUrl: data.video }));
+        },
+      });
     } catch (error) {
       setErrors((prev) => ({ ...prev, video: error.message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, video: false }));
+      return;
     }
   };
 
@@ -291,31 +227,16 @@ const MoshaverProfile = () => {
 
     try {
       await validateMediaDuration(file, "audio");
-
-      setLoading((prev) => ({ ...prev, audio: true }));
       setErrors((prev) => ({ ...prev, audio: "" }));
-
       const formData = new FormData();
       formData.append("audio", file);
-
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/Audio/",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("خطا در آپلود صوت");
-      }
-
-      const data = await response.json();
-      setProfile((prev) => ({ ...prev, audioUrl: data.url }));
+      uploadAudio(formData, {
+        onSuccess: (data) => {
+          setProfile((prev) => ({ ...prev, audioUrl: data.audio }));
+        },
+      });
     } catch (error) {
       setErrors((prev) => ({ ...prev, audio: error.message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, audio: false }));
     }
   };
 
@@ -365,15 +286,15 @@ const MoshaverProfile = () => {
   const validateLevel1 = () => {
     const errors = {};
 
-    if (!profile.imageUrl) {
+    if (!profile.imageUrl && userLevel === 1) {
       errors.image = "آپلود تصویر پروفایل الزامی است";
     }
 
-    if (!profile.videoUrl && !profile.audioUrl) {
+    if (!profile.videoUrl && !profile.audioUrl && userLevel === 1) {
       errors.media = "آپلود حداقل یکی از فایل‌های ویدیو یا صوت الزامی است";
     }
 
-    if (!profile.bio.trim()) {
+    if (!profile.bio.trim() && userLevel === 1) {
       errors.bio = "وارد کردن بیوگرافی الزامی است";
     }
 
@@ -383,17 +304,20 @@ const MoshaverProfile = () => {
   const validateLevel2 = () => {
     const errors = validateLevel1();
 
-    if (!profile.birthdateDisplay) {
+    if (!profile.birthdateDisplay && userLevel === 2) {
       errors.birthdate = "وارد کردن تاریخ تولد الزامی است";
     }
 
-    if (!profile.creditCardNumber.trim()) {
+    if (!profile.creditCardNumber.trim() && userLevel === 2) {
       errors.creditCard = "وارد کردن شماره کارت الزامی است";
-    } else if (!/^\d{16}$/.test(profile.creditCardNumber.replace(/\s/g, ""))) {
+    } else if (
+      !/^\d{16}$/.test(profile.creditCardNumber.replace(/\s/g, "")) &&
+      userLevel === 2
+    ) {
       errors.creditCard = "شماره کارت باید 16 رقم باشد";
     }
 
-    if (profile.degrees.length === 0) {
+    if (profile.degrees.length === 0 && userLevel === 2) {
       errors.degrees = "افزودن حداقل یک مدرک تحصیلی الزامی است";
     }
 
@@ -401,7 +325,16 @@ const MoshaverProfile = () => {
   };
 
   const handleSaveProfile = async () => {
+    const token = localStorage.getItem("accessToken");
     try {
+      if (userLevel === 1) {
+        setUserLevel(2);
+        return;
+      }
+      if (userLevel === 2) {
+        setUserLevel(3);
+        return;
+      }
       setLoading((prev) => ({ ...prev, profile: true }));
       setErrors({});
 
@@ -431,6 +364,7 @@ const MoshaverProfile = () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(payload),
         }
@@ -464,7 +398,7 @@ const MoshaverProfile = () => {
     return formatted;
   };
 
-  if (loading.userInfo) {
+  if (isUserInfoDataLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
@@ -547,7 +481,7 @@ const MoshaverProfile = () => {
                 )}
               </div>
 
-              {loading.image && (
+              {isUploadingImage && (
                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
                   <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 </div>
@@ -557,11 +491,11 @@ const MoshaverProfile = () => {
             <div className="flex-1">
               <button
                 onClick={() => imageInputRef.current?.click()}
-                disabled={loading.image}
+                disabled={isUploadingImage}
                 className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
               >
                 <Upload className="w-4 h-4" />
-                {loading.image ? "در حال آپلود..." : "انتخاب تصویر"}
+                {isUploadingImage ? "در حال آپلود..." : "انتخاب تصویر"}
               </button>
 
               <p className="text-sm text-gray-600 mt-2">
@@ -626,7 +560,7 @@ const MoshaverProfile = () => {
                   <div className="flex items-center gap-2 mt-2">
                     <button
                       onClick={() => setShowVideo(!showVideo)}
-                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1 bg-blue-50"
                     >
                       {showVideo ? (
                         <EyeOff className="w-4 h-4" />
@@ -639,7 +573,7 @@ const MoshaverProfile = () => {
                       onClick={() =>
                         setProfile((prev) => ({ ...prev, videoUrl: "" }))
                       }
-                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
                       حذف
@@ -650,11 +584,11 @@ const MoshaverProfile = () => {
 
               <button
                 onClick={() => videoInputRef.current?.click()}
-                disabled={loading.video}
+                disabled={isUploadingVideo}
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
               >
                 <Upload className="w-4 h-4" />
-                {loading.video ? "در حال آپلود..." : "انتخاب ویدیو"}
+                {isUploadingVideo ? "در حال آپلود..." : "انتخاب ویدیو"}
               </button>
 
               <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
@@ -733,11 +667,11 @@ const MoshaverProfile = () => {
 
               <button
                 onClick={() => audioInputRef.current?.click()}
-                disabled={loading.audio}
+                disabled={isUploadingAudio}
                 className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
               >
                 <Upload className="w-4 h-4" />
-                {loading.audio ? "در حال آپلود..." : "انتخاب صوت"}
+                {isUploadingAudio ? "در حال آپلود..." : "انتخاب صوت"}
               </button>
 
               <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
@@ -983,7 +917,7 @@ const MoshaverProfile = () => {
 
             {/* Degrees List */}
             <div className="space-y-3">
-              {profile.degrees.map((degree) => (
+              {profile.degrees?.map((degree) => (
                 <div
                   key={degree.id}
                   className="bg-white rounded-xl p-4 border border-gray-200"
@@ -1071,8 +1005,8 @@ const MoshaverProfile = () => {
                 {userLevel === 1
                   ? "ذخیره و ادامه به مرحله بعد"
                   : userLevel === 2
-                  ? "ذخیره و رفتن به پرسشنامه"
-                  : "ذخیره پروفایل"}
+                    ? "ذخیره و رفتن به پرسشنامه"
+                    : "ذخیره پروفایل"}
               </>
             )}
           </button>

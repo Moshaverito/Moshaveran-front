@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @font-face {
   font-family: "KalamehRegular";
   src: url("./assets/fonts/KalamehWeb-Regular.woff") format("woff2");
@@ -46,8 +45,6 @@
   }
 }
 
-
-
 /* For RTL Support */
 [dir="rtl"] {
   text-align: right;
@@ -56,7 +53,6 @@
 [dir="ltr"] {
   text-align: left;
 }
-
 
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -72,7 +68,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
   margin: 0;
@@ -93,9 +91,8 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  font-family: 'KalamehRegular', system-ui, sans-serif;
+  font-family: "KalamehRegular", system-ui, sans-serif;
 }
-
 
 h1 {
   font-size: 3.2em;
@@ -109,7 +106,7 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  /* background-color: #1a1a1a; */
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -133,7 +130,6 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
 
 /* Add to Header.css or index.css */
 
