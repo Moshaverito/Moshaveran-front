@@ -8,6 +8,8 @@ export function useLogOut() {
     mutationFn: () => apiLogOut(),
     onSuccess: () => {
       toast.success("خروج با موفقیت انجام شد");
+      localStorage.clear();
+      window.location.reload();
     },
     onError: (error) => {
       toast.error("خطا در خروج از حساب کاربری");

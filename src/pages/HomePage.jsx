@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
+
 import {
   Star,
   Clock,
@@ -11,7 +12,7 @@ import {
   Users2,
   MessageSquare,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const TherapistHomePage = () => {
   const navigate = useNavigate();
@@ -34,40 +35,40 @@ const TherapistHomePage = () => {
 
   const specialties = [
     {
-      key: "anxiety",
-      name: "اضطراب",
-      color: "from-blue-500 to-teal-500",
-      icon: "🧠",
+      title: "زوج درمانگر",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/couple.svg",
+      color: "from-blue-100 to-blue-200 text-blue-700",
     },
     {
-      key: "depression",
-      name: "افسردگی",
-      color: "from-indigo-500 to-blue-500",
-      icon: "💙",
+      title: "کوچینگ",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/coach.svg",
+      color: "from-purple-100 to-purple-200 text-purple-700",
     },
     {
-      key: "couples",
-      name: "زوج‌درمانی",
-      color: "from-red-500 to-pink-500",
-      icon: "❤️",
+      title: "مشاور تحصیلی",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/education.svg",
+      color: "from-rose-100 to-rose-200 text-rose-700",
     },
     {
-      key: "family",
-      name: "خانواده‌درمانی",
-      color: "from-green-500 to-teal-500",
-      icon: "👨‍👩‍👧‍👦",
+      title: "روان‌درمانگر",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/brain.svg",
+      color: "from-pink-100 to-pink-200 text-pink-700",
     },
     {
-      key: "kids",
-      name: "کودکان",
-      color: "from-purple-500 to-pink-500",
-      icon: "🧸",
+      title: "مشاور اسلامی",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/family.svg",
+      color: "from-green-100 to-green-200 text-green-700",
     },
     {
-      key: "addiction",
-      name: "اعتیاد",
-      color: "from-orange-500 to-red-500",
-      icon: "🚭",
+      title: "اعتیاد",
+      subtitle: "تخصص پرطرفدار",
+      icon: "/icons/addiction.svg",
+      color: "from-orange-100 to-orange-200 text-orange-700",
     },
   ];
 
@@ -202,7 +203,7 @@ const TherapistHomePage = () => {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-20">
             <h1 className="text-5xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
               به جمع
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">
@@ -225,7 +226,46 @@ const TherapistHomePage = () => {
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Specialties */}
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
+                تخصص‌های مورد نیاز
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                در هر یک از این حوزه‌ها می‌توانید فعالیت کنید و به کلاینت‌های
+                مختلف کمک کنید
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 max-w-6xl mx-auto">
+              {specialties.map((item, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between rounded-2xl shadow-md p-6 bg-gradient-to-br ${item.color} hover:shadow-xl transition`}
+                >
+                  <div className="flex items-center space-x-4 space-x-reverse">
+                    <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white/40 backdrop-blur-md">
+                      <img
+                        src={item.icon}
+                        className="w-8 h-8 fill-current text-current"
+                      />
+                    </div>
+                    <div className="text-right">
+                      <h3 className="text-lg font-bold">{item.title}</h3>
+                      <p className="text-sm opacity-70">{item.subtitle}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats */}
+      <section className="py-16 px-4 bg-white/20">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="bg-white/70 backdrop-blur-md rounded-2xl p-6 text-center shadow-lg">
               <div className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600 mb-2">
@@ -251,35 +291,6 @@ const TherapistHomePage = () => {
               </div>
               <div className="text-gray-600 text-sm">رضایت کلاینت‌ها</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Specialties */}
-      <section className="py-16 px-4 bg-white/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              تخصص‌های مورد نیاز
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              در هر یک از این حوزه‌ها می‌توانید فعالیت کنید و به کلاینت‌های
-              مختلف کمک کنید
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {specialties.map((specialty) => (
-              <div key={specialty.key} className="group">
-                <div
-                  className={`bg-gradient-to-br ${specialty.color} p-6 rounded-2xl text-white shadow-lg hover:shadow-xl transition-all duration-300 group-hover:scale-105`}
-                >
-                  <div className="text-3xl mb-3">{specialty.icon}</div>
-                  <h3 className="text-xl font-bold mb-2">{specialty.name}</h3>
-                  <div className="text-sm opacity-90">تخصص پرطرفدار</div>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </section>

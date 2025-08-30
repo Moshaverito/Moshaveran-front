@@ -17,7 +17,6 @@ export function useGetMonthlyIncome() {
     },
   });
 
-  console.log(monthlyInComeData);
   return {
     isLoadingMonthlyInCome,
     monthlyInComeData,

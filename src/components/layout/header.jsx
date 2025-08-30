@@ -14,6 +14,8 @@ export default function Header({ isLoggedIn = false, userRole = "user" }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+  const token = localStorage.getItem("accessToken");
+
   const handleLogout = () => {
     // Add your logout logic here
     console.log("Logging out...");
@@ -37,7 +39,7 @@ export default function Header({ isLoggedIn = false, userRole = "user" }) {
           <NavigationBar />
           {/* Right Side - Auth/User Actions */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {!isLoggedIn ? (
+            {!isLoggedIn && !token ? (
               // Not logged in - Login/Signup buttons
               <HeaderButtons closeMobileMenu={closeMobileMenu} />
             ) : (

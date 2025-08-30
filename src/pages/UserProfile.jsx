@@ -25,6 +25,8 @@ import { useGetUserInfo } from "../hooks/userProfile/useGetUserInfo";
 import { useUploadImage } from "../hooks/userProfile/useUploadImage";
 import { useUploadVideo } from "../hooks/userProfile/useUploadVideo";
 import { useUploadAudio } from "../hooks/userProfile/useUploadAudio";
+import { useUpdateUserInfo } from "../hooks/userProfile/useUpdateUserInfo";
+import NoAccess from "../components/uiComponents/DashBoard/NoAccess";
 
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
@@ -39,12 +41,8 @@ const MoshaverProfile = () => {
     degrees: [],
   });
 
-  const [loading, setLoading] = useState({
-    profile: false,
-    userInfo: true,
-  });
-
   const [errors, setErrors] = useState({});
+  const token = localStorage.getItem("accessToken");
   const [showVideo, setShowVideo] = useState(false);
   const [showAudio, setShowAudio] = useState(false);
   const [newDegree, setNewDegree] = useState({
@@ -67,6 +65,10 @@ const MoshaverProfile = () => {
   const { uploadVideo, isUploadingVideo } = useUploadVideo();
 
   const { uploadAudio, isUploadingAudio } = useUploadAudio();
+
+  const { updateUserInfo, isUpdatingUserInfo } = useUpdateUserInfo();
+
+  console.log(userInfoData);
 
   // Fetch user info on component mount
   useEffect(() => {
@@ -157,10 +159,7 @@ const MoshaverProfile = () => {
       }));
       return;
     }
-
-    setLoading((prev) => ({ ...prev, image: true }));
     setErrors((prev) => ({ ...prev, image: "" }));
-
     const formData = new FormData();
     formData.append("image", file);
     uploadImage(formData, {
@@ -324,71 +323,42 @@ const MoshaverProfile = () => {
     return errors;
   };
 
-  const handleSaveProfile = async () => {
-    const token = localStorage.getItem("accessToken");
-    try {
-      if (userLevel === 1) {
-        setUserLevel(2);
-        return;
-      }
-      if (userLevel === 2) {
-        setUserLevel(3);
-        return;
-      }
-      setLoading((prev) => ({ ...prev, profile: true }));
-      setErrors({});
+  const handleSaveProfile = () => {
+    let payload;
+    setErrors({});
+    // Validate based on current level
+    // const validationErrors =
+    //   userLevel === 1 ? validateLevel1() : validateLevel2();
 
-      // Validate based on current level
-      const validationErrors =
-        userLevel === 1 ? validateLevel1() : validateLevel2();
+    // if (Object.keys(validationErrors).length > 0) {
+    //   setErrors(validationErrors);
+    //   return;
+    // }
 
-      if (Object.keys(validationErrors).length > 0) {
-        setErrors(validationErrors);
-        return;
-      }
-
-      const payload = {
+    if (userLevel === 1) {
+      payload = {
         bio: profile.bio,
-        birthdate: profile.birthdate,
+
         image_url: profile.imageUrl,
-        video_url: profile.videoUrl,
-        audio_url: profile.audioUrl,
+        // video_url: profile.videoUrl,
+        // audio_url: profile.audioUrl,
+        video_url: "test url",
+        audio_url: "test url",
+        level: 2,
+      };
+    } else {
+      payload = {
+        birthdate: profile.birthdate,
         credit_card_number: profile.creditCardNumber.replace(/\s/g, ""),
         degrees: profile.degrees,
-        level: userLevel === 1 ? 2 : userLevel, // Move to next level if completing level 1
+        level: 3,
       };
+    }
 
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/accounts/moshavers/update-profile/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("خطا در ذخیره پروفایل");
-      }
-
-      // Success feedback
-      alert("پروفایل با موفقیت ذخیره شد");
-
-      // If completing level 2, redirect to questionnaire
-      if (userLevel === 2) {
-        window.location.href = "/TQuestionnaire";
-      } else if (userLevel === 1) {
-        // Update user level and reload component
-        setUserLevel(2);
-        alert("مرحله اول تکمیل شد. لطفاً مرحله دوم را نیز تکمیل کنید.");
-      }
-    } catch (error) {
-      setErrors((prev) => ({ ...prev, profile: error.message }));
-    } finally {
-      setLoading((prev) => ({ ...prev, profile: false }));
+    updateUserInfo(payload);
+    // If completing level 2, redirect to questionnaire
+    if (userLevel === 2) {
+      window.location.href = "/TQuestionnaire";
     }
   };
 
@@ -418,6 +388,11 @@ const MoshaverProfile = () => {
       window.location.href = "/";
     }
   };
+
+  if (!token) {
+    return <NoAccess />;
+  }
+
   return (
     <div
       className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 text-gray-800"
@@ -991,10 +966,10 @@ const MoshaverProfile = () => {
         <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6">
           <button
             onClick={handleSaveProfile}
-            disabled={loading.profile}
+            disabled={isUpdatingUserInfo}
             className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
           >
-            {loading.profile ? (
+            {isUpdatingUserInfo ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 در حال ذخیره...
@@ -1005,8 +980,8 @@ const MoshaverProfile = () => {
                 {userLevel === 1
                   ? "ذخیره و ادامه به مرحله بعد"
                   : userLevel === 2
-                    ? "ذخیره و رفتن به پرسشنامه"
-                    : "ذخیره پروفایل"}
+                  ? "ذخیره و رفتن به پرسشنامه"
+                  : "ذخیره پروفایل"}
               </>
             )}
           </button>

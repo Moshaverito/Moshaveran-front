@@ -102,7 +102,6 @@ const MoshaverDashboard = () => {
   const handlePaymentRequest = async () => {
     const amount = parseInt(paymentAmount);
     if (amount <= availablePayments && amount > 0) {
-      console.log(`requesting payment of ${amount}`);
       requestPayment({ amount });
     } else {
       toast.error("مبلغ وارد شده نامعتبر است");

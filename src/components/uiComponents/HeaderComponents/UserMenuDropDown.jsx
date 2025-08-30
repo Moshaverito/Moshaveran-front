@@ -8,8 +8,6 @@ function UserMenuDropDown({ setUserMenuOpen }) {
 
   function handleLogout() {
     logout();
-    localStorage.clear();
-    window.location.reload();
   }
   return (
     <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50">

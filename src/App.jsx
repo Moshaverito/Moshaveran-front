@@ -147,7 +147,10 @@ const App = () => {
               <Route path="/test" element={<LiveKitPage />} />
               <Route path="/about-us" element={<AboutUs />} />
               <Route path="/joinUs" element={<WorkWithUsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route
+                path="/notifications"
+                element={<NotificationsPage isLoggedIn={isLoggedIn} />}
+              />
               <Route
                 path="/setAvailability"
                 element={

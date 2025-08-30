@@ -4,8 +4,11 @@ import NotificationsSummary from "../components/uiComponents/NotificationsCompon
 import NotificationsLoader from "../components/uiComponents/NotificationsComponents/NotificationsLoader";
 import NotificationCard from "../components/uiComponents/NotificationsComponents/NotificationCard";
 import { useGetNotifications } from "../hooks/Notification/useGetNotifications";
+import NoAccess from "../components/uiComponents/DashBoard/NoAccess";
 
-const NotificationsPage = () => {
+const NotificationsPage = ({ isLoggedIn }) => {
+  const token = localStorage.getItem("accessToken");
+
   const { notifications, isLoading, refetchNotifications } =
     useGetNotifications();
 
@@ -13,6 +16,10 @@ const NotificationsPage = () => {
 
   // number of unread notifications will be passed to the header and summary components
   const unreadCount = notifications?.length;
+
+  if (!token && !isLoggedIn) {
+    return <NoAccess />;
+  }
 
   return (
     <div

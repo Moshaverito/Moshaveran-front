@@ -1,13 +1,16 @@
 export const fetchUserInfo = async () => {
   const token = localStorage.getItem("accessToken");
   try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
     const response = await fetch(
       "https://api.moshaveritoo.ir/api/accounts/moshavers/user_info/",
       {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -28,6 +31,9 @@ export const fetchUserInfo = async () => {
 export const apiUploadImage = async (formData) => {
   const token = localStorage.getItem("accessToken");
   try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
     const headers = {
       Authorization: `Bearer ${token}`,
     };
@@ -56,6 +62,10 @@ export const apiUploadImage = async (formData) => {
 export const apiUploadVideo = async (formData) => {
   const token = localStorage.getItem("accessToken");
   try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+
     const headers = {
       Authorization: `Bearer ${token}`,
     };
@@ -73,7 +83,11 @@ export const apiUploadVideo = async (formData) => {
       throw new Error("خطا در آپلود ویدیو");
     }
 
+    console.log(response);
+
     const data = await response.json();
+
+    console.log(data);
     return data;
   } catch (error) {
     console.error("خطا در آپلود ویدیو:", error);
@@ -82,9 +96,11 @@ export const apiUploadVideo = async (formData) => {
 };
 
 export const apiUploadAudio = async (formData) => {
+  const token = localStorage.getItem("accessToken");
   try {
-    const token = localStorage.getItem("accessToken");
-
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
     const headers = {
       Authorization: `Bearer ${token}`,
     };
@@ -106,6 +122,39 @@ export const apiUploadAudio = async (formData) => {
     return data;
   } catch (error) {
     console.error("خطا در آپلود صوت");
+    throw error;
+  }
+};
+
+export const apiUpdateUserInfo = async (payload) => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/accounts/moshavers/update-profile/",
+      {
+        method: "UPDATE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      console.log(response);
+      throw new Error("خطا در به‌روزرسانی اطلاعات کاربر");
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error(error);
     throw error;
   }
 };
