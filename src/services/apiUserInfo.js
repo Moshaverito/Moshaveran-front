@@ -83,11 +83,8 @@ export const apiUploadVideo = async (formData) => {
       throw new Error("خطا در آپلود ویدیو");
     }
 
-    console.log(response);
-
     const data = await response.json();
 
-    console.log(data);
     return data;
   } catch (error) {
     console.error("خطا در آپلود ویدیو:", error);
@@ -129,6 +126,8 @@ export const apiUploadAudio = async (formData) => {
 export const apiUpdateUserInfo = async (payload) => {
   const token = localStorage.getItem("accessToken");
 
+  console.log(payload);
+
   try {
     if (!token) {
       throw new Error("لطفاً ابتدا وارد شوید");
@@ -136,7 +135,7 @@ export const apiUpdateUserInfo = async (payload) => {
     const response = await fetch(
       "https://api.moshaveritoo.ir/api/accounts/moshavers/update-profile/",
       {
-        method: "UPDATE",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           authorization: `Bearer ${token}`,
@@ -145,13 +144,14 @@ export const apiUpdateUserInfo = async (payload) => {
       }
     );
 
+    console.log(response);
+
     if (!response.ok) {
-      console.log(response);
       throw new Error("خطا در به‌روزرسانی اطلاعات کاربر");
     }
 
     const data = await response.json();
-
+    console.log(data);
     return data;
   } catch (error) {
     console.error(error);
