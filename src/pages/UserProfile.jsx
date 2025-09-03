@@ -27,6 +27,9 @@ import { useUploadVideo } from "../hooks/userProfile/useUploadVideo";
 import { useUploadAudio } from "../hooks/userProfile/useUploadAudio";
 import { useUpdateUserInfo } from "../hooks/userProfile/useUpdateUserInfo";
 import NoAccess from "../components/uiComponents/DashBoard/NoAccess";
+import { useUpdateBillingInfo } from "../hooks/Payment/useUpdateBillingInfo";
+import { useGetBillingInfo } from "../hooks/Payment/useGetBillingInfo";
+import { useUpdateDegree } from "../hooks/userProfile/useUpdateDegree";
 
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
@@ -39,8 +42,10 @@ const MoshaverProfile = () => {
     audioUrl: "",
     creditCardNumber: "",
     degrees: [],
+    shebaNumber: "",
   });
 
+  console.log(userLevel);
   const [errors, setErrors] = useState({});
   const token = localStorage.getItem("accessToken");
   const [showVideo, setShowVideo] = useState(false);
@@ -68,27 +73,34 @@ const MoshaverProfile = () => {
 
   const { updateUserInfo, isUpdatingUserInfo } = useUpdateUserInfo();
 
+  const { updateBillingInfo, isUpdatingBillingInfo } = useUpdateBillingInfo();
+
+  const { billingInfo, isFetchingBillingInfo } = useGetBillingInfo();
+
+  const { updateDegree, isUpdatingDegree } = useUpdateDegree();
+
   console.log(userInfoData);
 
   // Fetch user info on component mount
   useEffect(() => {
     if (userInfoData) {
-      setUserLevel(userInfoData.level || 1);
+      setUserLevel(userInfoData?.level || 1);
       setProfile((prev) => ({
         ...prev,
         bio: userInfoData.bio || "",
-        birthdate: userInfoData.birthdate || "",
-        birthdateDisplay: userInfoData.birthdate
-          ? georgianToJalali(userInfoData.birthdate)
+        birthdate: userInfoData.birth_date || "",
+        birthdateDisplay: userInfoData.birth_date
+          ? georgianToJalali(userInfoData.birth_date)
           : "",
         imageUrl: userInfoData.image_url,
         videoUrl: userInfoData.video_url || "",
         audioUrl: userInfoData.audio_url || "",
-        creditCardNumber: userInfoData.credit_card_number || "",
         degrees: userInfoData.degrees || [],
+        shebaNumber: billingInfo?.sheba_number || "",
+        creditCardNumber: billingInfo?.card_number || "",
       }));
     }
-  }, [userInfoData]);
+  }, [userInfoData, billingInfo]);
 
   // Jalali to Georgian date conversion
   const jalaliToGeorgian = (jalaliDate) => {
@@ -274,6 +286,8 @@ const MoshaverProfile = () => {
     setNewDegree({ title: "", university: "", year_obtained: "", major: "" });
     setShowAddDegree(false);
     setErrors((prev) => ({ ...prev, degree: "" }));
+
+    updateDegree(newDegree);
   };
 
   const removeDegree = (degreeId) => {
@@ -286,15 +300,15 @@ const MoshaverProfile = () => {
   const validateLevel1 = () => {
     const errors = {};
 
-    if (!profile.imageUrl && userLevel === 1) {
+    if (!profile.imageUrl && userLevel == 1) {
       errors.image = "آپلود تصویر پروفایل الزامی است";
     }
 
-    if (!profile.videoUrl && !profile.audioUrl && userLevel === 1) {
+    if (!profile.videoUrl && !profile.audioUrl && userLevel == 1) {
       errors.media = "آپلود حداقل یکی از فایل‌های ویدیو یا صوت الزامی است";
     }
 
-    if (!profile.bio.trim() && userLevel === 1) {
+    if (!profile.bio.trim() && userLevel == 1) {
       errors.bio = "وارد کردن بیوگرافی الزامی است";
     }
 
@@ -302,19 +316,28 @@ const MoshaverProfile = () => {
   };
 
   const validateLevel2 = () => {
-    const errors = validateLevel1();
+    const errors = {};
 
-    if (!profile.birthdateDisplay && userLevel === 2) {
+    if (!profile.birthdateDisplay && userLevel == 2) {
       errors.birthdate = "وارد کردن تاریخ تولد الزامی است";
     }
 
-    if (!profile.creditCardNumber.trim() && userLevel === 2) {
+    if (!profile.creditCardNumber.trim() && userLevel == 2) {
       errors.creditCard = "وارد کردن شماره کارت الزامی است";
     } else if (
       !/^\d{16}$/.test(profile.creditCardNumber.replace(/\s/g, "")) &&
-      userLevel === 2
+      userLevel == 2
     ) {
       errors.creditCard = "شماره کارت باید 16 رقم باشد";
+    }
+
+    if (!profile.shebaNumber.trim() && userLevel == 2) {
+      errors.shebaNumber = "وارد کردن شماره شبا الزامی است";
+    } else if (
+      !/^IR\d{24}$/.test(profile.shebaNumber.replace(/\s/g, "")) &&
+      userLevel == 2
+    ) {
+      errors.shebaNumber = "شماره شبا باید 24 رقم باشد";
     }
 
     if (profile.degrees.length === 0 && userLevel === 2) {
@@ -336,7 +359,7 @@ const MoshaverProfile = () => {
       return;
     }
 
-    if (userLevel === 1) {
+    if (userLevel == 1) {
       payload = {
         bio: profile.bio,
         image_url: profile.imageUrl,
@@ -346,16 +369,28 @@ const MoshaverProfile = () => {
       };
     } else {
       payload = {
-        birthdate: profile.birthdate,
+        birth_date: profile.birthdate,
         credit_card_number: profile.creditCardNumber.replace(/\s/g, ""),
         degrees: profile.degrees,
-        level: 2,
+        level: 1,
       };
     }
 
+    const billingData = {
+      card_number: profile.creditCardNumber.replace(/\s/g, ""),
+      sheba_number: profile.shebaNumber.replace(/\s/g, ""),
+    };
+    billingData && updateBillingInfo(billingData);
     updateUserInfo(payload);
+
+    if (userLevel == 1) {
+      setUserLevel(2);
+    }
+    if (userLevel == 2) {
+      setUserLevel(3);
+    }
     // If completing level 2, redirect to questionnaire
-    if (userLevel === 2) {
+    if (userLevel == 2) {
       window.location.href = "/TQuestionnaire";
     }
   };
@@ -366,7 +401,16 @@ const MoshaverProfile = () => {
     return formatted;
   };
 
-  if (isUserInfoDataLoading) {
+  function formatShebaNumber(input) {
+    let raw = typeof input === "string" ? input : input?.value;
+    if (!raw) return "";
+    let digits = raw.replace(/\D/g, "");
+    digits = digits.slice(0, 24);
+    let formatted = "IR" + digits.replace(/(\d{4})(?=\d)/g, "$1 ");
+    return formatted.trim();
+  }
+
+  if (isUserInfoDataLoading || isFetchingBillingInfo) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center">
         <div className="text-center">
@@ -433,253 +477,251 @@ const MoshaverProfile = () => {
         </div>
 
         {/* Profile Photo Section */}
-        {userLevel === 1 && (
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Camera className="w-5 h-5" />
-              تصویر پروفایل
-              <span className="text-red-500 text-sm">*</span>
-            </h2>
 
-            <div className="flex flex-col md:flex-row items-center gap-6">
-              <div className="relative">
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                  {profile.imageUrl ? (
-                    <img
-                      src={profile.imageUrl}
-                      alt="تصویر پروفایل"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-12 h-12 text-gray-400" />
-                  )}
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Camera className="w-5 h-5" />
+            تصویر پروفایل
+            <span className="text-red-500 text-sm">*</span>
+          </h2>
+
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                {profile.imageUrl ? (
+                  <img
+                    src={profile.imageUrl}
+                    alt="تصویر پروفایل"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-12 h-12 text-gray-400" />
+                )}
+              </div>
+
+              {isUploadingImage && (
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 </div>
-
-                {isUploadingImage && (
-                  <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
-                    <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex-1">
-                <button
-                  onClick={() => imageInputRef.current?.click()}
-                  disabled={isUploadingImage}
-                  className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isUploadingImage ? "در حال آپلود..." : "انتخاب تصویر"}
-                </button>
-
-                <p className="text-sm text-gray-600 mt-2">
-                  فرمت‌های مجاز: JPG, PNG, GIF - حداکثر 5 مگابایت
-                </p>
-
-                {errors.image && (
-                  <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.image}
-                  </div>
-                )}
-              </div>
+              )}
             </div>
 
-            <input
-              ref={imageInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
+            <div className="flex-1">
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                disabled={isUploadingImage}
+                className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {isUploadingImage ? "در حال آپلود..." : "انتخاب تصویر"}
+              </button>
+
+              <p className="text-sm text-gray-600 mt-2">
+                فرمت‌های مجاز: JPG, PNG, GIF - حداکثر 5 مگابایت
+              </p>
+
+              {errors.image && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.image}
+                </div>
+              )}
+            </div>
           </div>
-        )}
+
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
 
         {/* Media Section */}
-        {userLevel === 1 && (
-          <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Video className="w-5 h-5" />
-              ویدیو یا صوت معرفی
-              <span className="text-red-500 text-sm">*</span>
-            </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Video Section */}
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <Video className="w-4 h-4" />
-                  ویدیو معرفی
-                </h3>
+        <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <Video className="w-5 h-5" />
+            ویدیو یا صوت معرفی
+            <span className="text-red-500 text-sm">*</span>
+          </h2>
 
-                {profile.videoUrl && (
-                  <div className="mb-4">
-                    <div className="relative bg-black rounded-xl overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Video Section */}
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Video className="w-4 h-4" />
+                ویدیو معرفی
+              </h3>
+
+              {profile.videoUrl && (
+                <div className="mb-4">
+                  <div className="relative bg-black rounded-xl overflow-hidden">
+                    {showVideo ? (
+                      <video
+                        src={profile.videoUrl}
+                        controls
+                        className="w-full max-h-48 object-contain"
+                      />
+                    ) : (
+                      <div className="h-32 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                        <button
+                          onClick={() => setShowVideo(true)}
+                          className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-all"
+                        >
+                          <Eye className="w-6 h-6 text-white" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => setShowVideo(!showVideo)}
+                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1 bg-blue-50"
+                    >
                       {showVideo ? (
-                        <video
-                          src={profile.videoUrl}
-                          controls
-                          className="w-full max-h-48 object-contain"
-                        />
+                        <EyeOff className="w-4 h-4" />
                       ) : (
-                        <div className="h-32 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                          <button
-                            onClick={() => setShowVideo(true)}
-                            className="bg-white/20 hover:bg-white/30 rounded-full p-3 transition-all"
-                          >
-                            <Eye className="w-6 h-6 text-white" />
-                          </button>
-                        </div>
+                        <Eye className="w-4 h-4" />
                       )}
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => setShowVideo(!showVideo)}
-                        className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1 bg-blue-50"
-                      >
-                        {showVideo ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                        {showVideo ? "مخفی کردن" : "مشاهده"}
-                      </button>
-                      <button
-                        onClick={() =>
-                          setProfile((prev) => ({ ...prev, videoUrl: "" }))
-                        }
-                        className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        حذف
-                      </button>
-                    </div>
+                      {showVideo ? "مخفی کردن" : "مشاهده"}
+                    </button>
+                    <button
+                      onClick={() =>
+                        setProfile((prev) => ({ ...prev, videoUrl: "" }))
+                      }
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      حذف
+                    </button>
                   </div>
-                )}
+                </div>
+              )}
 
-                <button
-                  onClick={() => videoInputRef.current?.click()}
-                  disabled={isUploadingVideo}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isUploadingVideo ? "در حال آپلود..." : "انتخاب ویدیو"}
-                </button>
+              <button
+                onClick={() => videoInputRef.current?.click()}
+                disabled={isUploadingVideo}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {isUploadingVideo ? "در حال آپلود..." : "انتخاب ویدیو"}
+              </button>
 
-                <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  حداکثر 1 دقیقه - MP4, MOV, AVI - حداکثر 50MB
-                </p>
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                حداکثر 1 دقیقه - MP4, MOV, AVI - حداکثر 50MB
+              </p>
 
-                {errors.video && (
-                  <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.video}
-                  </div>
-                )}
+              {errors.video && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.video}
+                </div>
+              )}
 
-                <input
-                  ref={videoInputRef}
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoUpload}
-                  className="hidden"
-                />
-              </div>
-
-              {/* Audio Section */}
-              <div>
-                <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <Mic className="w-4 h-4" />
-                  صوت معرفی
-                </h3>
-
-                {profile.audioUrl && (
-                  <div className="mb-4">
-                    <div className="bg-gray-100 rounded-xl p-4">
-                      {showAudio ? (
-                        <audio
-                          src={profile.audioUrl}
-                          controls
-                          className="w-full"
-                        />
-                      ) : (
-                        <div className="flex items-center justify-center h-16">
-                          <button
-                            onClick={() => setShowAudio(true)}
-                            className="bg-teal-500 hover:bg-teal-600 text-white rounded-full p-3 transition-all"
-                          >
-                            <Mic className="w-5 h-5" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 mt-2">
-                      <button
-                        onClick={() => setShowAudio(!showAudio)}
-                        className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
-                      >
-                        {showAudio ? (
-                          <EyeOff className="w-4 h-4" />
-                        ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                        {showAudio ? "مخفی کردن" : "پخش"}
-                      </button>
-                      <button
-                        onClick={() =>
-                          setProfile((prev) => ({ ...prev, audioUrl: "" }))
-                        }
-                        className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        حذف
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => audioInputRef.current?.click()}
-                  disabled={isUploadingAudio}
-                  className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isUploadingAudio ? "در حال آپلود..." : "انتخاب صوت"}
-                </button>
-
-                <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  حداکثر 1 دقیقه - MP3, WAV, M4A - حداکثر 10MB
-                </p>
-
-                {errors.audio && (
-                  <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                    <AlertCircle className="w-4 h-4" />
-                    {errors.audio}
-                  </div>
-                )}
-
-                <input
-                  ref={audioInputRef}
-                  type="file"
-                  accept="audio/*"
-                  onChange={handleAudioUpload}
-                  className="hidden"
-                />
-              </div>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/*"
+                onChange={handleVideoUpload}
+                className="hidden"
+              />
             </div>
 
-            {errors.media && (
-              <div className="mt-4 text-sm text-red-600 flex items-center gap-1 justify-center">
-                <AlertCircle className="w-4 h-4" />
-                {errors.media}
-              </div>
-            )}
+            {/* Audio Section */}
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <Mic className="w-4 h-4" />
+                صوت معرفی
+              </h3>
+
+              {profile.audioUrl && (
+                <div className="mb-4">
+                  <div className="bg-gray-100 rounded-xl p-4">
+                    {showAudio ? (
+                      <audio
+                        src={profile.audioUrl}
+                        controls
+                        className="w-full"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-16">
+                        <button
+                          onClick={() => setShowAudio(true)}
+                          className="bg-teal-500 hover:bg-teal-600 text-white rounded-full p-3 transition-all"
+                        >
+                          <Mic className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      onClick={() => setShowAudio(!showAudio)}
+                      className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
+                    >
+                      {showAudio ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                      {showAudio ? "مخفی کردن" : "پخش"}
+                    </button>
+                    <button
+                      onClick={() =>
+                        setProfile((prev) => ({ ...prev, audioUrl: "" }))
+                      }
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      حذف
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button
+                onClick={() => audioInputRef.current?.click()}
+                disabled={isUploadingAudio}
+                className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all"
+              >
+                <Upload className="w-4 h-4" />
+                {isUploadingAudio ? "در حال آپلود..." : "انتخاب صوت"}
+              </button>
+
+              <p className="text-xs text-gray-600 mt-2 flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                حداکثر 1 دقیقه - MP3, WAV, M4A - حداکثر 10MB
+              </p>
+
+              {errors.audio && (
+                <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-4 h-4" />
+                  {errors.audio}
+                </div>
+              )}
+
+              <input
+                ref={audioInputRef}
+                type="file"
+                accept="audio/*"
+                onChange={handleAudioUpload}
+                className="hidden"
+              />
+            </div>
           </div>
-        )}
+
+          {errors.media && (
+            <div className="mt-4 text-sm text-red-600 flex items-center gap-1 justify-center">
+              <AlertCircle className="w-4 h-4" />
+              {errors.media}
+            </div>
+          )}
+        </div>
 
         {/* Basic Info Section */}
         <div className="bg-white/70 backdrop-blur-md rounded-2xl shadow-lg p-6 mb-6">
@@ -690,35 +732,34 @@ const MoshaverProfile = () => {
 
           <div className="space-y-4">
             {/* Bio */}
-            {userLevel === 1 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  بیوگرافی
-                  <span className="text-red-500 text-sm">*</span>
-                </label>
-                <textarea
-                  placeholder="درباره خود، تخصص‌ها و تجربیاتتان بنویسید..."
-                  value={profile.bio}
-                  onChange={(e) =>
-                    setProfile((prev) => ({ ...prev, bio: e.target.value }))
-                  }
-                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-                  rows={4}
-                  maxLength={500}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <div className="text-sm text-gray-500">
-                    {profile.bio.length}/500 کاراکتر
-                  </div>
-                  {errors.bio && (
-                    <div className="text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.bio}
-                    </div>
-                  )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                بیوگرافی
+                <span className="text-red-500 text-sm">*</span>
+              </label>
+              <textarea
+                placeholder="درباره خود، تخصص‌ها و تجربیاتتان بنویسید..."
+                value={profile.bio}
+                onChange={(e) =>
+                  setProfile((prev) => ({ ...prev, bio: e.target.value }))
+                }
+                className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+                rows={4}
+                maxLength={500}
+              />
+              <div className="flex justify-between items-center mt-1">
+                <div className="text-sm text-gray-500">
+                  {profile.bio.length}/500 کاراکتر
                 </div>
+                {errors.bio && (
+                  <div className="text-sm text-red-600 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.bio}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             {/* Level 2 majors */}
             {userLevel >= 2 && (
@@ -760,6 +801,7 @@ const MoshaverProfile = () => {
                       placeholder="1234 5678 9012 3456"
                       value={formatCardNumber(profile.creditCardNumber)}
                       onChange={(e) => {
+                        errors.creditCard = "";
                         const value = e.target.value.replace(/\s/g, "");
                         if (value.length <= 16 && /^\d*$/.test(value)) {
                           setProfile((prev) => ({
@@ -778,6 +820,47 @@ const MoshaverProfile = () => {
                     <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
                       {errors.creditCard}
+                    </div>
+                  )}
+                </div>
+                {/* SHEBA NUMBER */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    شماره شبا
+                    <span className="text-red-500 text-sm">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="IR06 0120 0000 0000 1234 5678 90"
+                      pattern="\d{31}"
+                      value={formatShebaNumber(profile.shebaNumber)}
+                      onChange={(e) => {
+                        errors.shebaNumber = "";
+                        let value = e.target.value
+                          .replace(/\s/g, "")
+                          .replace(/^IR/i, "");
+                        if (value.length <= 31 && /^\d*$/.test(value)) {
+                          const formatted = value.replace(
+                            /(\d{4})(?=\d)/g,
+                            "$1 "
+                          );
+                          setProfile((prev) => ({
+                            ...prev,
+                            shebaNumber: "IR " + formatted,
+                          }));
+                        }
+                      }}
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 text-left pl-10"
+                      dir="ltr"
+                      maxLength={31}
+                    />
+                    <CreditCard className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                  </div>
+                  {errors.shebaNumber && (
+                    <div className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.shebaNumber}
                     </div>
                   )}
                 </div>
@@ -862,12 +945,14 @@ const MoshaverProfile = () => {
                 <div className="flex gap-2">
                   <button
                     onClick={addDegree}
+                    disabled={isUpdatingDegree}
                     className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white px-4 py-2 rounded-xl text-sm transition-all"
                   >
                     <CheckCircle className="w-4 h-4 inline ml-1" />
                     ذخیره
                   </button>
                   <button
+                    disabled={isUpdatingDegree}
                     onClick={() => {
                       setShowAddDegree(false);
                       setNewDegree({
@@ -975,7 +1060,7 @@ const MoshaverProfile = () => {
             disabled={isUpdatingUserInfo}
             className="w-full bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
           >
-            {isUpdatingUserInfo ? (
+            {isUpdatingUserInfo || isUpdatingBillingInfo ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                 در حال ذخیره...

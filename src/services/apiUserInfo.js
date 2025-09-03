@@ -126,8 +126,6 @@ export const apiUploadAudio = async (formData) => {
 export const apiUpdateUserInfo = async (payload) => {
   const token = localStorage.getItem("accessToken");
 
-  console.log(payload);
-
   try {
     if (!token) {
       throw new Error("لطفاً ابتدا وارد شوید");
@@ -144,14 +142,42 @@ export const apiUpdateUserInfo = async (payload) => {
       }
     );
 
-    console.log(response);
-
     if (!response.ok) {
       throw new Error("خطا در به‌روزرسانی اطلاعات کاربر");
     }
 
     const data = await response.json();
-    console.log(data);
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiUpdateDegree = async (newDegree) => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    const response = await fetch(
+      `https://api.moshaveritoo.ir/api/accounts/degrees/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newDegree),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("خطا در به‌روزرسانی مدرک");
+    }
+
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error(error);
