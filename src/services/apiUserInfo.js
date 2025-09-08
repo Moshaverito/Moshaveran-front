@@ -213,6 +213,36 @@ export const apiDeleteDegree = async (degreeId) => {
   }
 };
 
+export const apiDeleteImage = async (URL) => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    const response = await fetch(
+      `https://api.moshaveritoo.ir/api/media/images/delete/`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(URL),
+      }
+    );
+    console.log(response);
+    if (!response.ok) {
+      throw new Error("خطا در حذف عکس");
+    }
+
+    return;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
 export const apiDeleteAudio = async (audioId) => {
   const token = localStorage.getItem("accessToken");
 
@@ -233,11 +263,40 @@ export const apiDeleteAudio = async (audioId) => {
     );
 
     if (!response.ok) {
-      throw new Error("خطا در به‌روزرسانی مدرک");
+      throw new Error("خطا در حذف فایل صوتی");
     }
 
-    const data = await response.json();
-    return data;
+    return;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiDeleteVideo = async (URL) => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    const response = await fetch(
+      `https://api.moshaveritoo.ir/api/media/images/delete/`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(URL),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("خطا در حذف ویدیو");
+    }
+
+    return;
   } catch (error) {
     console.error(error);
     throw error;

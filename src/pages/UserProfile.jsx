@@ -32,6 +32,10 @@ import { useGetBillingInfo } from "../hooks/Payment/useGetBillingInfo";
 import { useUpdateDegree } from "../hooks/userProfile/useUpdateDegree";
 import { useDeleteDegree } from "../hooks/userProfile/useDeleteDegree";
 
+import { useDeleteImage } from "../hooks/userProfile/useDeleteImage";
+import { useDeleteVideo } from "../hooks/userProfile/useDeleteVideo";
+import { useDeleteAudio } from "../hooks/userProfile/useDeleteAudio";
+
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
   const [profile, setProfile] = useState({
@@ -56,7 +60,7 @@ const MoshaverProfile = () => {
     year_obtained: "",
   });
   const [showAddDegree, setShowAddDegree] = useState(false);
-
+  console.log(userLevel);
   const imageInputRef = useRef(null);
   const videoInputRef = useRef(null);
   const audioInputRef = useRef(null);
@@ -80,7 +84,11 @@ const MoshaverProfile = () => {
 
   const { deleteDegree, isDeletingDegree } = useDeleteDegree();
 
-  console.log(userInfoData);
+  const { deleteImage, isDeleteImage } = useDeleteImage();
+
+  const { deleteVideo, isDeletingVideo } = useDeleteVideo();
+
+  const { deleteAudio, isDeletingAudio } = useDeleteAudio();
 
   // Fetch user info on component mount
   useEffect(() => {
@@ -103,6 +111,30 @@ const MoshaverProfile = () => {
     }
   }, [userInfoData, billingInfo]);
 
+  const handleRemoveImage = () => {
+    if (!profile.imageUrl) return;
+    deleteImage(profile.imageUrl, {
+      onSuccess: () => setProfile((prev) => ({ ...prev, imageUrl: "" })),
+    });
+  };
+
+  const handleRemoveVideo = () => {
+    if (!profile.videoUrl) return;
+    deleteVideo(profile.videoUrl, {
+      onSuccess: () => {
+        setProfile((prev) => ({ ...prev, videoUrl: "" }));
+      },
+    });
+  };
+
+  const handleRemoveAudio = () => {
+    if (!profile.audioUrl) return;
+    deleteAudio(profile.audioUrl, {
+      onSuccess: () => {
+        setProfile((prev) => ({ ...prev, audioUrl: "" }));
+      },
+    });
+  };
   // Jalali to Georgian date conversion
   const jalaliToGeorgian = (jalaliDate) => {
     if (!jalaliDate) return "";
@@ -358,7 +390,7 @@ const MoshaverProfile = () => {
       errors.shebaNumber = "شماره شبا باید 24 رقم باشد";
     }
 
-    if (profile.degrees.length === 0 && userLevel === 2) {
+    if (profile.degrees.length === 0 && userLevel == 2) {
       errors.degrees = "افزودن حداقل یک مدرک تحصیلی الزامی است";
     }
 
@@ -370,7 +402,7 @@ const MoshaverProfile = () => {
     setErrors({});
     // Validate based on current level
     const validationErrors =
-      userLevel === 1 ? validateLevel1() : validateLevel2();
+      userLevel == 1 ? validateLevel1() : validateLevel2();
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -529,14 +561,24 @@ const MoshaverProfile = () => {
             </div>
 
             <div className="flex-1">
-              <button
-                onClick={() => imageInputRef.current?.click()}
-                disabled={isUploadingImage}
-                className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
-              >
-                <Upload className="w-4 h-4" />
-                {isUploadingImage ? "در حال آپلود..." : "انتخاب تصویر"}
-              </button>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploadingImage ? "در حال آپلود..." : "انتخاب تصویر"}
+                </button>
+
+                <button
+                  onClick={handleRemoveImage}
+                  disabled={isDeleteImage || !profile.imageUrl}
+                  className="bg-red-400 hover:cursor-pointer hover:bg-red-500 disabled:from-gray-400 disabled:to-gray-500 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all"
+                >
+                  حذف تصویر
+                </button>
+              </div>
 
               <p className="text-sm text-gray-600 mt-2">
                 فرمت‌های مجاز: JPG, PNG, GIF - حداکثر 5 مگابایت
@@ -611,9 +653,8 @@ const MoshaverProfile = () => {
                       {showVideo ? "مخفی کردن" : "مشاهده"}
                     </button>
                     <button
-                      onClick={() =>
-                        setProfile((prev) => ({ ...prev, videoUrl: "" }))
-                      }
+                      onClick={handleRemoveVideo}
+                      disabled={isDeletingVideo || !profile.videoUrl}
                       className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -694,10 +735,9 @@ const MoshaverProfile = () => {
                       {showAudio ? "مخفی کردن" : "پخش"}
                     </button>
                     <button
-                      onClick={() =>
-                        setProfile((prev) => ({ ...prev, audioUrl: "" }))
-                      }
-                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
+                      onClick={handleRemoveAudio}
+                      disabled={isDeletingAudio || !profile.audioUrl}
+                      className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1 bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />
                       حذف
@@ -1061,7 +1101,7 @@ const MoshaverProfile = () => {
         )}
 
         {/* Survey Section - Only show for Level 2 completion */}
-        {userLevel === 2 && (
+        {userLevel == 2 && (
           <section className="mb-8">
             <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-4">
@@ -1095,11 +1135,11 @@ const MoshaverProfile = () => {
             ) : (
               <>
                 <Save className="w-5 h-5" />
-                {userLevel === 1
+                {userLevel == 1
                   ? "ذخیره و ادامه به مرحله بعد"
-                  : userLevel === 2
-                    ? "ذخیره و رفتن به پرسشنامه"
-                    : "ذخیره پروفایل"}
+                  : userLevel == 2
+                  ? "ذخیره و رفتن به پرسشنامه"
+                  : "ذخیره پروفایل"}
               </>
             )}
           </button>

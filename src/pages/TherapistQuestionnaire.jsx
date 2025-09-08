@@ -45,12 +45,14 @@ const TherapistQuestionnaire = () => {
         "https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/therapist_questions/",
         {
           method: "GET",
-          // headers: {
-          //   'Content-Type': 'application/json',
-          //   'Authorization': `Bearer ${token}`,
-          // },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         }
       );
+
+      console.log(response);
 
       if (response.ok) {
         const data = await response.json();
@@ -388,7 +390,9 @@ const TherapistQuestionnaire = () => {
             <div
               className="bg-gradient-to-r from-teal-500 to-blue-500 h-2 rounded-full transition-all duration-500"
               style={{
-                width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`,
+                width: `${
+                  ((currentQuestionIndex + 1) / questions.length) * 100
+                }%`,
               }}
             ></div>
           </div>

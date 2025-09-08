@@ -7,10 +7,10 @@ export function useDeleteAudio() {
   const { mutate: deleteAudio, isPending: isDeletingAudio } = useMutation({
     mutationFn: (audioId) => apiDeleteAudio(audioId),
     onSuccess: () => {
-      toast.success("فایل صوتی با موفقیت آپلود شد");
+      toast.success("فایل صوتی با موفقیت حذف شد");
     },
     onError: (error) => {
-      toast.error("خطا در آپلود صوت:", error);
+      toast.error("خطا در حذف صوت:", error);
       console.log(error.message);
     },
   });

@@ -2,7 +2,7 @@
 export async function apiLogIn(formData) {
   try {
     const response = await fetch(
-      "https://api.moshaveritoo.ir/api/accounts/Mlogin/login/",
+      "https://api.moshaveritoo.ir/api/accounts/login/login/",
       {
         method: "POST",
         headers: {
@@ -14,12 +14,12 @@ export async function apiLogIn(formData) {
         }),
       }
     );
+    console.log(response);
     const data = await response.json();
-
     if (!response.ok) {
       throw new Error(data.error || "خطا در ارسال کد");
     }
-
+    console.log(data);
     return data;
   } catch (error) {
     console.error("Error during login:", error);
