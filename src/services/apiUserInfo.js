@@ -184,3 +184,62 @@ export const apiUpdateDegree = async (newDegree) => {
     throw error;
   }
 };
+
+export const apiDeleteDegree = async (degreeId) => {
+  const token = localStorage.getItem("accessToken");
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    console.log(degreeId);
+    const response = await fetch(
+      `https://api.moshaveritoo.ir/api/accounts/degrees/${degreeId}/`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log(response);
+    if (!response.ok) {
+      throw new Error("خطا در حذف مدرک");
+    }
+    return;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};
+
+export const apiDeleteAudio = async (audioId) => {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    if (!token) {
+      throw new Error("لطفاً ابتدا وارد شوید");
+    }
+    const response = await fetch(
+      `https://api.moshaveritoo.ir/api/media/audios/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(audioId),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("خطا در به‌روزرسانی مدرک");
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

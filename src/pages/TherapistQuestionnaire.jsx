@@ -1,5 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { CheckCircle, Circle, ChevronRight, ChevronLeft, Save, AlertCircle, Star } from 'lucide-react';
+import { useState, useEffect } from "react";
+import {
+  CheckCircle,
+  Circle,
+  ChevronRight,
+  ChevronLeft,
+  Save,
+  AlertCircle,
+  Star,
+} from "lucide-react";
 
 const TherapistQuestionnaire = () => {
   const [questions, setQuestions] = useState([]);
@@ -19,50 +27,55 @@ const TherapistQuestionnaire = () => {
   useEffect(() => {
     const answeredQuestions = Object.keys(answers).length;
     const totalQuestions = questions.length;
-    setProgress(totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0);
+    setProgress(
+      totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0
+    );
   }, [answers, questions]);
 
   const getAccessToken = () => {
     // Get access token from localStorage or wherever it's stored
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem("accessToken");
   };
 
   const loadQuestions = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      const response = await fetch('https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/therapist_questions/', {
-        method: 'GET',
-        // headers: {
-        //   'Content-Type': 'application/json',
-        //   'Authorization': `Bearer ${token}`,
-        // },
-      });
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/therapist_questions/",
+        {
+          method: "GET",
+          // headers: {
+          //   'Content-Type': 'application/json',
+          //   'Authorization': `Bearer ${token}`,
+          // },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
         setQuestions(data.questions || []);
       } else if (response.status === 401) {
-        setErrors({ general: 'لطفاً وارد حساب کاربری خود شوید' });
+        setErrors({ general: "لطفاً وارد حساب کاربری خود شوید" });
       } else {
-        setErrors({ general: 'خطا در بارگذاری سوالات' });
+        setErrors({ general: "خطا در بارگذاری سوالات" });
       }
     } catch (error) {
-      setErrors({ general: 'خطا در اتصال به سرور' });
+      setErrors({ general: "خطا در اتصال به سرور" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleAnswerChange = (questionId, value) => {
-    setAnswers(prev => ({
+    setAnswers((prev) => ({
       ...prev,
-      [questionId]: value
+      [questionId]: value,
     }));
-    
+
     // Clear error for this question
     if (errors[questionId]) {
-      setErrors(prev => {
+      setErrors((prev) => {
         const newErrors = { ...prev };
         delete newErrors[questionId];
         return newErrors;
@@ -71,19 +84,21 @@ const TherapistQuestionnaire = () => {
   };
 
   const handleMultiSelectChange = (questionId, option, isChecked) => {
-    setAnswers(prev => {
-      const currentAnswers = prev[questionId] ? prev[questionId].split(',') : [];
+    setAnswers((prev) => {
+      const currentAnswers = prev[questionId]
+        ? prev[questionId].split(",")
+        : [];
       let newAnswers;
-      
+
       if (isChecked) {
         newAnswers = [...currentAnswers, option];
       } else {
-        newAnswers = currentAnswers.filter(answer => answer !== option);
+        newAnswers = currentAnswers.filter((answer) => answer !== option);
       }
-      
+
       return {
         ...prev,
-        [questionId]: newAnswers.join(',')
+        [questionId]: newAnswers.join(","),
       };
     });
   };
@@ -93,7 +108,7 @@ const TherapistQuestionnaire = () => {
     if (!currentQuestion) return true;
 
     if (currentQuestion.is_required && !answers[currentQuestion.id]) {
-      setErrors({ [currentQuestion.id]: 'این سوال الزامی است' });
+      setErrors({ [currentQuestion.id]: "این سوال الزامی است" });
       return false;
     }
     return true;
@@ -102,7 +117,7 @@ const TherapistQuestionnaire = () => {
   const handleNext = () => {
     if (validateCurrentQuestion()) {
       if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex(prev => prev + 1);
+        setCurrentQuestionIndex((prev) => prev + 1);
         setErrors({});
       }
     }
@@ -110,7 +125,7 @@ const TherapistQuestionnaire = () => {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex((prev) => prev - 1);
       setErrors({});
     }
   };
@@ -118,18 +133,20 @@ const TherapistQuestionnaire = () => {
   const handleSubmit = async () => {
     // Validate all required questions
     const newErrors = {};
-    questions.forEach(question => {
+    questions.forEach((question) => {
       if (question.is_required && !answers[question.id]) {
-        newErrors[question.id] = 'این سوال الزامی است';
+        newErrors[question.id] = "این سوال الزامی است";
       }
     });
-    
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       // Go to first unanswered required question
-      const firstErrorQuestion = questions.find(q => newErrors[q.id]);
+      const firstErrorQuestion = questions.find((q) => newErrors[q.id]);
       if (firstErrorQuestion) {
-        const errorIndex = questions.findIndex(q => q.id === firstErrorQuestion.id);
+        const errorIndex = questions.findIndex(
+          (q) => q.id === firstErrorQuestion.id
+        );
         setCurrentQuestionIndex(errorIndex);
       }
       return;
@@ -137,45 +154,51 @@ const TherapistQuestionnaire = () => {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem('accessToken');
-      console.log('Access Token:', token);
-      const submissionData = Object.entries(answers).map(([questionId, answerText]) => ({
-        question_id: parseInt(questionId),
-        answer_text: answerText
-      }));
+      const token = localStorage.getItem("accessToken");
+      console.log("Access Token:", token);
+      const submissionData = Object.entries(answers).map(
+        ([questionId, answerText]) => ({
+          question_id: parseInt(questionId),
+          answer_text: answerText,
+        })
+      );
 
-      const response = await fetch('https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/submit_therapist_answers/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(submissionData),
-      });
+      const response = await fetch(
+        "https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/submit_therapist_answers/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(submissionData),
+        }
+      );
 
       if (response.ok) {
-        alert('پرسشنامه با موفقیت ارسال شد');
+        alert("پرسشنامه با موفقیت ارسال شد");
         // Reset form or redirect
-        navigate('/dashboard');
+        navigate("/dashboard");
 
         setAnswers({});
         setCurrentQuestionIndex(0);
       } else if (response.status === 401) {
-        setErrors({ general: 'لطفاً وارد حساب کاربری خود شوید' });
+        setErrors({ general: "لطفاً وارد حساب کاربری خود شوید" });
       } else {
         const data = await response.json();
-        setErrors({ general: data.message || 'خطا در ارسال پرسشنامه' });
+        setErrors({ general: data.message || "خطا در ارسال پرسشنامه" });
       }
     } catch (error) {
-      setErrors({ general: 'خطا در اتصال به سرور' });
+      setErrors({ general: "خطا در اتصال به سرور" });
     } finally {
       setSubmitting(false);
     }
   };
 
   const renderQuestion = (question) => {
-    const { id, text, question_type, options, is_required, description } = question;
-    
+    const { id, text, question_type, options, is_required, description } =
+      question;
+
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 min-h-[400px] flex flex-col">
         {/* Question Header */}
@@ -191,10 +214,10 @@ const TherapistQuestionnaire = () => {
 
         {/* Question Input Based on Type */}
         <div className="flex-1">
-          {question_type === 'text' && (
+          {question_type === "text" && (
             <div>
               <textarea
-                value={answers[id] || ''}
+                value={answers[id] || ""}
                 onChange={(e) => handleAnswerChange(id, e.target.value)}
                 placeholder="پاسخ خود را وارد کنید..."
                 className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none min-h-[150px]"
@@ -202,10 +225,13 @@ const TherapistQuestionnaire = () => {
             </div>
           )}
 
-          {question_type === 'select' && (
+          {question_type === "select" && (
             <div className="space-y-3">
               {options?.map((option, index) => (
-                <label key={index} className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                <label
+                  key={index}
+                  className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <input
                     type="radio"
                     name={`question_${id}`}
@@ -227,16 +253,23 @@ const TherapistQuestionnaire = () => {
             </div>
           )}
 
-          {question_type === 'multi' && (
+          {question_type === "multi" && (
             <div className="space-y-3">
               {options?.map((option, index) => {
-                const isChecked = answers[id] ? answers[id].split(',').includes(option) : false;
+                const isChecked = answers[id]
+                  ? answers[id].split(",").includes(option)
+                  : false;
                 return (
-                  <label key={index} className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                  <label
+                    key={index}
+                    className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                  >
                     <input
                       type="checkbox"
                       checked={isChecked}
-                      onChange={(e) => handleMultiSelectChange(id, option, e.target.checked)}
+                      onChange={(e) =>
+                        handleMultiSelectChange(id, option, e.target.checked)
+                      }
                       className="sr-only"
                     />
                     <div className="flex items-center flex-1">
@@ -253,14 +286,14 @@ const TherapistQuestionnaire = () => {
             </div>
           )}
 
-          {question_type === 'scale' && (
+          {question_type === "scale" && (
             <div className="flex flex-col items-center">
               <div className="flex items-center justify-between w-full mb-6">
                 <span className="text-sm text-gray-600">ضعیف</span>
                 <span className="text-sm text-gray-600">عالی</span>
               </div>
               <div className="flex justify-center items-center space-x-4 space-x-reverse">
-                {[1, 2, 3, 4, 5].map(rating => (
+                {[1, 2, 3, 4, 5].map((rating) => (
                   <button
                     key={rating}
                     type="button"
@@ -270,8 +303,8 @@ const TherapistQuestionnaire = () => {
                     <Star
                       className={`w-10 h-10 ${
                         answers[id] && parseInt(answers[id]) >= rating
-                          ? 'text-yellow-400 fill-yellow-400'
-                          : 'text-gray-300'
+                          ? "text-yellow-400 fill-yellow-400"
+                          : "text-gray-300"
                       }`}
                     />
                     <span className="text-sm text-gray-600 mt-2">{rating}</span>
@@ -295,7 +328,10 @@ const TherapistQuestionnaire = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center" dir="rtl">
+      <div
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center"
+        dir="rtl"
+      >
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">در حال بارگذاری سوالات...</p>
@@ -306,7 +342,10 @@ const TherapistQuestionnaire = () => {
 
   if (questions.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center" dir="rtl">
+      <div
+        className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center"
+        dir="rtl"
+      >
         <div className="text-center">
           <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-600">هیچ سوالی یافت نشد</p>
@@ -322,7 +361,10 @@ const TherapistQuestionnaire = () => {
   const isLastQuestion = currentQuestionIndex === questions.length - 1;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4" dir="rtl">
+    <div
+      className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4"
+      dir="rtl"
+    >
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -343,9 +385,11 @@ const TherapistQuestionnaire = () => {
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-            <div 
+            <div
               className="bg-gradient-to-r from-teal-500 to-blue-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
+              style={{
+                width: `${((currentQuestionIndex + 1) / questions.length) * 100}%`,
+              }}
             ></div>
           </div>
           <div className="text-xs text-gray-600 text-center">
@@ -406,7 +450,9 @@ const TherapistQuestionnaire = () => {
         {/* Footer */}
         <div className="text-center mt-8 text-gray-600">
           <p className="text-sm">
-            {isLastQuestion ? 'آماده ارسال پرسشنامه هستید' : 'پاسخ خود را انتخاب کنید و روی بعدی کلیک کنید'}
+            {isLastQuestion
+              ? "آماده ارسال پرسشنامه هستید"
+              : "پاسخ خود را انتخاب کنید و روی بعدی کلیک کنید"}
           </p>
         </div>
       </div>

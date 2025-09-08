@@ -30,6 +30,7 @@ import NoAccess from "../components/uiComponents/DashBoard/NoAccess";
 import { useUpdateBillingInfo } from "../hooks/Payment/useUpdateBillingInfo";
 import { useGetBillingInfo } from "../hooks/Payment/useGetBillingInfo";
 import { useUpdateDegree } from "../hooks/userProfile/useUpdateDegree";
+import { useDeleteDegree } from "../hooks/userProfile/useDeleteDegree";
 
 const MoshaverProfile = () => {
   const [userLevel, setUserLevel] = useState(1); // Will be fetched from API
@@ -44,8 +45,6 @@ const MoshaverProfile = () => {
     degrees: [],
     shebaNumber: "",
   });
-
-  console.log(userLevel);
   const [errors, setErrors] = useState({});
   const token = localStorage.getItem("accessToken");
   const [showVideo, setShowVideo] = useState(false);
@@ -78,6 +77,8 @@ const MoshaverProfile = () => {
   const { billingInfo, isFetchingBillingInfo } = useGetBillingInfo();
 
   const { updateDegree, isUpdatingDegree } = useUpdateDegree();
+
+  const { deleteDegree, isDeletingDegree } = useDeleteDegree();
 
   console.log(userInfoData);
 
@@ -262,10 +263,15 @@ const MoshaverProfile = () => {
   };
 
   const addDegree = () => {
-    if (!newDegree.title.trim() || !newDegree.university.trim()) {
+    if (
+      !newDegree.title.trim() ||
+      !newDegree.university.trim() ||
+      !newDegree.year_obtained ||
+      !newDegree.major.trim()
+    ) {
       setErrors((prev) => ({
         ...prev,
-        degree: "لطفاً عنوان مدرک و نام موسسه را وارد کنید",
+        degree: "لطفاً تمامی فیلدهای مدرک را پر کنید",
       }));
       return;
     }
@@ -274,6 +280,14 @@ const MoshaverProfile = () => {
       setErrors((prev) => ({
         ...prev,
         degree: "حداکثر 30 مدرک قابل اضافه کردن است",
+      }));
+      return;
+    }
+
+    if (newDegree.year_obtained < 1320 || newDegree.year_obtained > 1404) {
+      setErrors((prev) => ({
+        ...prev,
+        degree: "سال اخذ مدرک باید بین 1320 و 1404 باشد",
       }));
       return;
     }
@@ -291,10 +305,14 @@ const MoshaverProfile = () => {
   };
 
   const removeDegree = (degreeId) => {
-    setProfile((prev) => ({
-      ...prev,
-      degrees: prev.degrees.filter((degree) => degree.id !== degreeId),
-    }));
+    deleteDegree(degreeId, {
+      onSuccess: () => {
+        setProfile((prev) => ({
+          ...prev,
+          degrees: prev.degrees.filter((degree) => degree.id !== degreeId),
+        }));
+      },
+    });
   };
 
   const validateLevel1 = () => {
@@ -372,6 +390,10 @@ const MoshaverProfile = () => {
         birth_date: profile.birthdate,
         credit_card_number: profile.creditCardNumber.replace(/\s/g, ""),
         degrees: profile.degrees,
+        bio: profile.bio,
+        image_url: profile.imageUrl,
+        video_url: profile.videoUrl,
+        audio_url: profile.audioUrl,
         level: 1,
       };
     }
@@ -387,10 +409,10 @@ const MoshaverProfile = () => {
       setUserLevel(2);
     }
     if (userLevel == 2) {
-      setUserLevel(3);
+      setUserLevel(1);
     }
     // If completing level 2, redirect to questionnaire
-    if (userLevel == 2) {
+    if (userLevel == 3) {
       window.location.href = "/TQuestionnaire";
     }
   };
@@ -908,36 +930,41 @@ const MoshaverProfile = () => {
                     type="text"
                     placeholder="نام موسسه یا دانشگاه"
                     value={newDegree.university}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      setErrors((prev) => ({ ...prev, degree: "" }));
                       setNewDegree((prev) => ({
                         ...prev,
                         university: e.target.value,
-                      }))
-                    }
+                      }));
+                    }}
                     className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                   <input
-                    type="text"
+                    type="number"
+                    min="1320"
+                    max="1404"
                     placeholder="سال اخذ مدرک"
                     value={newDegree.year_obtained}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      setErrors((prev) => ({ ...prev, degree: "" }));
                       setNewDegree((prev) => ({
                         ...prev,
                         year_obtained: e.target.value,
-                      }))
-                    }
+                      }));
+                    }}
                     className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                   <input
                     type="text"
                     placeholder="رشته تحصیلی"
                     value={newDegree.major}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      setErrors((prev) => ({ ...prev, degree: "" }));
                       setNewDegree((prev) => ({
                         ...prev,
                         major: e.target.value,
-                      }))
-                    }
+                      }));
+                    }}
                     className="bg-white border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-teal-500"
                   />
                 </div>
