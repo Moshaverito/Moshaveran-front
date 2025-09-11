@@ -8,25 +8,28 @@ import {
   AlertCircle,
   Star,
 } from "lucide-react";
+import { useGetQuestions } from "../hooks/questions/useGetQuestions";
+import { useAnswerQuestions } from "../hooks/questions/useAnswerQuestions";
+import { useNavigate } from "react-router-dom";
 
 const TherapistQuestionnaire = () => {
-  const [questions, setQuestions] = useState([]);
+  const { isLoadingQuestions, questions } = useGetQuestions();
+  const { isAnswering, answerQuestions } = useAnswerQuestions();
+
+  const navigate = useNavigate();
+
   const [answers, setAnswers] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+
   const [errors, setErrors] = useState({});
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
   // Load questions on component mount
-  useEffect(() => {
-    loadQuestions();
-  }, []);
 
   // Update progress when answers change
   useEffect(() => {
     const answeredQuestions = Object.keys(answers).length;
-    const totalQuestions = questions.length;
+    const totalQuestions = questions?.length;
     setProgress(
       totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0
     );
@@ -35,38 +38,6 @@ const TherapistQuestionnaire = () => {
   const getAccessToken = () => {
     // Get access token from localStorage or wherever it's stored
     return localStorage.getItem("accessToken");
-  };
-
-  const loadQuestions = async () => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/therapist_questions/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log(response);
-
-      if (response.ok) {
-        const data = await response.json();
-        setQuestions(data.questions || []);
-      } else if (response.status === 401) {
-        setErrors({ general: "لطفاً وارد حساب کاربری خود شوید" });
-      } else {
-        setErrors({ general: "خطا در بارگذاری سوالات" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handleAnswerChange = (questionId, value) => {
@@ -154,47 +125,18 @@ const TherapistQuestionnaire = () => {
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      console.log("Access Token:", token);
-      const submissionData = Object.entries(answers).map(
-        ([questionId, answerText]) => ({
-          question_id: parseInt(questionId),
-          answer_text: answerText,
-        })
-      );
+    const submissionData = Object.entries(answers).map(
+      ([questionId, answerText]) => ({
+        question_id: parseInt(questionId),
+        answer_text: answerText,
+      })
+    );
 
-      const response = await fetch(
-        "https://api.moshaveritoo.ir/api/questionnaire/QuestionMaking/submit_therapist_answers/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(submissionData),
-        }
-      );
-
-      if (response.ok) {
-        alert("پرسشنامه با موفقیت ارسال شد");
-        // Reset form or redirect
+    answerQuestions(submissionData, {
+      onSuccess: () => {
         navigate("/dashboard");
-
-        setAnswers({});
-        setCurrentQuestionIndex(0);
-      } else if (response.status === 401) {
-        setErrors({ general: "لطفاً وارد حساب کاربری خود شوید" });
-      } else {
-        const data = await response.json();
-        setErrors({ general: data.message || "خطا در ارسال پرسشنامه" });
-      }
-    } catch (error) {
-      setErrors({ general: "خطا در اتصال به سرور" });
-    } finally {
-      setSubmitting(false);
-    }
+      },
+    });
   };
 
   const renderQuestion = (question) => {
@@ -222,7 +164,7 @@ const TherapistQuestionnaire = () => {
                 value={answers[id] || ""}
                 onChange={(e) => handleAnswerChange(id, e.target.value)}
                 placeholder="پاسخ خود را وارد کنید..."
-                className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none min-h-[150px]"
+                className="w-full p-4 border bg-inherit text-gray-800 border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none min-h-[150px]"
               />
             </div>
           )}
@@ -328,7 +270,7 @@ const TherapistQuestionnaire = () => {
     );
   };
 
-  if (loading) {
+  if (isLoadingQuestions) {
     return (
       <div
         className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-12 px-4 flex items-center justify-center"
@@ -341,7 +283,6 @@ const TherapistQuestionnaire = () => {
       </div>
     );
   }
-
   if (questions.length === 0) {
     return (
       <div
@@ -428,10 +369,10 @@ const TherapistQuestionnaire = () => {
           {isLastQuestion ? (
             <button
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={isAnswering}
               className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
-              {submitting ? (
+              {isAnswering ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               ) : (
                 <>

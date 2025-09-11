@@ -19,7 +19,6 @@ export async function apiLogIn(formData) {
     if (!response.ok) {
       throw new Error(data.error || "خطا در ارسال کد");
     }
-    console.log(data);
     return data;
   } catch (error) {
     console.error("Error during login:", error);
@@ -189,5 +188,27 @@ export async function apiLogOut() {
     return res.json();
   } catch (err) {
     console.error("Failed to fetch notifications:", err);
+  }
+}
+
+export async function apiValidateToken() {
+  const token = localStorage.getItem("accessToken");
+
+  try {
+    const response = await fetch(
+      "https://api.moshaveritoo.ir/api/auth/Validate-Token/",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log(response);
+  } catch (error) {
+    console.error("خطا در اتصال به سرور", error);
+    throw error;
   }
 }

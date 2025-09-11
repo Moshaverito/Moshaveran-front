@@ -21,6 +21,7 @@ import { useUpdatePendingSessions } from "../hooks/Sessions/useUpdatePendingSess
 import { useCancelSession } from "../hooks/Sessions/useCancelSession.js";
 import { useGetAvailablePayment } from "../hooks/Sessions/useGetAvailablePayment.js";
 import { useRequestPayments } from "../hooks/Sessions/useRequestPayments.js";
+import { apiValidateToken } from "../services/apiAuth.js";
 
 const MoshaverDashboard = () => {
   const [showSessionModal, setShowSessionModal] = useState(false);
@@ -36,6 +37,10 @@ const MoshaverDashboard = () => {
       return null;
     }
   });
+
+  useEffect(() => {
+    apiValidateToken();
+  }, []);
 
   const [availablePayment, setAvailablePayment] = useState(0);
   const [error, setError] = useState(null);
